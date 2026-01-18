@@ -8,6 +8,7 @@ Progetto didattico progressivo per imparare lo sviluppo Android, dall'interfacci
 - [Lezione 0: Ciclo di vita Activity](#lezione-0-ciclo-vita-activity) (branch: `lezione-0`)
 - [Lezione 1: TextView, EditText e Button](#lezione-1-textview-edittext-e-button) (branch: `lezione-1-textview-edittext-button`)
 - [Lezione 2: ViewModel e LiveData](#lezione-2-viewmodel-e-livedata) (branch: `lezione-2-viewmodel`)
+- [Lezione 3: RecyclerView e Liste](#lezione-3-recyclerview-e-liste) (branch: `lezione-3-liste-semplici`)
 
 ---
 
@@ -300,6 +301,227 @@ app/src/main/
 ### Prossimi passi
 
 Nella prossima lezione introdurremo **RecyclerView** per mostrare liste scrollabili di elementi, usando il ViewModel per gestire la lista di dati.
+
+---
+
+## Lezione 3: RecyclerView e Liste
+
+### Obiettivo
+Imparare a mostrare liste scrollabili di dati usando RecyclerView, uno dei componenti più importanti di Android.
+
+### Perché RecyclerView?
+
+Per mostrare liste di dati, potremmo pensare di usare tante TextView in un ScrollView. Ma questo ha problemi:
+
+1. **Memoria**: Se hai 1000 elementi, crei 1000 view = app lenta e crash
+2. **Performance**: Creare view è costoso, scorrere diventa lento
+3. **Codice**: Devi gestire manualmente ogni elemento
+
+**RecyclerView risolve tutto questo**:
+- Riutilizza le view invece di crearle ogni volta (pattern ViewHolder)
+- Mostra solo gli elementi visibili a schermo
+- Performance eccellenti anche con milioni di elementi
+- Codice pulito con pattern Adapter
+
+### Cosa abbiamo imparato
+
+#### 1. **RecyclerView** - Lista scrollabile efficiente
+
+RecyclerView è un componente che mostra liste in modo ottimizzato:
+
+```xml
+<androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/recyclerViewCards"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+```
+
+Per funzionare ha bisogno di:
+- **Adapter**: Collega i dati alle view
+- **LayoutManager**: Definisce come disporre gli item (lista, griglia, etc.)
+- **ViewHolder**: Contiene i riferimenti alle view di ogni item
+
+#### 2. **Adapter** - Collegamento tra dati e view
+
+L'Adapter è il ponte tra i tuoi dati e la RecyclerView:
+
+```kotlin
+class CardAdapter(private var cards: List<String>) : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
+
+    // 1. Crea la view per un item
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CardViewHolder {
+        val binding = ItemCardSimpleBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return CardViewHolder(binding)
+    }
+
+    // 2. Collega i dati alla view
+    override fun onBindViewHolder(holder: CardViewHolder, position: Int) {
+        holder.bind(cards[position])
+    }
+
+    // 3. Dice quanti elementi ci sono
+    override fun getItemCount(): Int = cards.size
+}
+```
+
+**I tre metodi fondamentali:**
+- `onCreateViewHolder()`: Crea una nuova view (chiamato poche volte)
+- `onBindViewHolder()`: Riempie una view con i dati (chiamato per ogni item visibile)
+- `getItemCount()`: Dice quanti elementi totali ci sono
+
+#### 3. **ViewHolder** - Pattern per performance
+
+Il ViewHolder conserva i riferimenti alle view per riutilizzarle:
+
+```kotlin
+class CardViewHolder(private val binding: ItemCardSimpleBinding) : RecyclerView.ViewHolder(binding.root) {
+    fun bind(cardName: String) {
+        binding.textViewCardName.text = cardName
+    }
+}
+```
+
+**Perché è importante?**
+- Senza ViewHolder: Chiami `findViewById()` mille volte = LENTO ❌
+- Con ViewHolder: Salvi i riferimenti e li riusi = VELOCE ✅
+
+#### 4. **LayoutManager** - Disposizione degli item
+
+Il LayoutManager decide come disporre gli elementi:
+
+```kotlin
+binding.recyclerViewCards.layoutManager = LinearLayoutManager(requireContext())
+```
+
+**Tipi disponibili:**
+- `LinearLayoutManager`: Lista verticale o orizzontale
+- `GridLayoutManager`: Griglia (es. galleria foto)
+- `StaggeredGridLayoutManager`: Griglia con altezze variabili (es. Pinterest)
+
+#### 5. **Integrazione con ViewModel e LiveData**
+
+La lista di carte è gestita dal ViewModel:
+
+```kotlin
+// Nel ViewModel
+private val _cards = MutableLiveData<List<String>>()
+val cards: LiveData<List<String>> = _cards
+
+// Nel Fragment
+viewModel.cards.observe(viewLifecycleOwner) { cards ->
+    cardAdapter.updateCards(cards)
+}
+```
+
+Quando i dati cambiano nel ViewModel, la RecyclerView si aggiorna automaticamente! ✨
+
+### Come funziona il riciclo delle view
+
+```
+┌─────────────────────────┐
+│  Elementi visibili: 5   │
+│  ┌─────┐               │
+│  │ Item 1 │  ← View creata
+│  ├─────┤               │
+│  │ Item 2 │  ← View creata
+│  ├─────┤               │
+│  │ Item 3 │  ← View creata
+│  ├─────┤               │
+│  │ Item 4 │  ← View creata
+│  ├─────┤               │
+│  │ Item 5 │  ← View creata
+│  └─────┘               │
+└─────────────────────────┘
+        ↓ scroll giù
+┌─────────────────────────┐
+│  ┌─────┐               │
+│  │ Item 2 │             │
+│  ├─────┤               │
+│  │ Item 3 │             │
+│  ├─────┤               │
+│  │ Item 4 │             │
+│  ├─────┤               │
+│  │ Item 5 │             │
+│  ├─────┤               │
+│  │ Item 6 │  ← View RIUSATA (era Item 1!)
+│  └─────┘               │
+└─────────────────────────┘
+
+RecyclerView ha creato solo 5 view, anche se ci sono 13 elementi!
+```
+
+### Struttura completa
+
+```
+┌──────────────┐
+│  ViewModel   │ ← Gestisce lista di carte (LiveData)
+└──────┬───────┘
+       │ osserva
+┌──────▼───────┐
+│  Fragment    │ ← Configura RecyclerView e Adapter
+└──────┬───────┘
+       │ fornisce dati
+┌──────▼───────┐
+│   Adapter    │ ← Collega dati a view
+└──────┬───────┘
+       │ crea e riusa
+┌──────▼───────┐
+│  ViewHolder  │ ← Contiene riferimenti alle view
+└──────────────┘
+```
+
+### Vantaggi di questa architettura
+
+✅ **Separazione responsabilità**:
+- ViewModel: gestisce i dati
+- Fragment: configura l'UI
+- Adapter: collega dati a view
+- ViewHolder: ottimizza performance
+
+✅ **Performance**:
+- Solo le view visibili sono create
+- Le view sono riutilizzate quando scrolli
+- Nessun lag anche con migliaia di elementi
+
+✅ **Manutenibilità**:
+- Ogni classe ha un compito preciso
+- Facile da modificare e testare
+- Codice organizzato e leggibile
+
+### File creati/modificati
+
+```
+app/src/main/
+├── java/.../
+│   ├── FirstFragment.kt           # Configura RecyclerView
+│   ├── MainViewModel.kt           # Gestisce lista carte con LiveData
+│   └── CardAdapter.kt             # Adapter per RecyclerView (NUOVO)
+└── res/
+    └── layout/
+        ├── fragment_first.xml     # Aggiunta RecyclerView
+        └── item_card_simple.xml   # Layout singolo item (NUOVO)
+```
+
+### Test pratico
+
+**Prova questo:**
+1. Avvia l'app
+2. Vedrai una lista scrollabile di 13 carte
+3. Scorri su e giù: fluido e veloce!
+4. Ruota lo schermo: la lista rimane (grazie al ViewModel)
+
+### Concetti chiave
+
+- **RecyclerView**: Componente per liste scrollabili efficienti
+- **Adapter**: Collega i dati alle view
+- **ViewHolder**: Pattern per riutilizzare view e migliorare performance
+- **LayoutManager**: Definisce disposizione degli item
+- **notifyDataSetChanged()**: Notifica cambiamenti nei dati
+- **View Recycling**: Riutilizzo delle view invece di crearne sempre di nuove
+
+### Prossimi passi
+
+Nella prossima lezione creeremo una **data class Card** per rappresentare le carte come oggetti con più proprietà (valore, seme) invece di semplici stringhe.
 
 ---
 

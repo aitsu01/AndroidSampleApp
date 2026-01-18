@@ -5,17 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import it.zakantonio.androidsampleapp.core.BaseFragment
 import it.zakantonio.androidsampleapp.databinding.FragmentFirstBinding
 
 /**
- * Fragment principale che dimostra l'uso di ViewModel e LiveData.
+ * Fragment principale che dimostra l'uso di RecyclerView con ViewModel e LiveData.
  *
  * In questa lezione impariamo a:
- * - Usare ViewModel per separare logica UI dai dati
- * - Usare LiveData per osservare cambiamenti nei dati
- * - Pattern MVVM (Model-View-ViewModel)
- * - Gestire il ciclo di vita in modo corretto
+ * - Usare RecyclerView per mostrare liste scrollabili
+ * - Creare un Adapter personalizzato
+ * - Osservare liste di dati con LiveData
+ * - Gestire il LayoutManager per definire come gli item sono disposti
  */
 class FirstFragment : BaseFragment() {
 
@@ -24,8 +25,10 @@ class FirstFragment : BaseFragment() {
     private val binding get() = _binding!!
 
     // ViewModel: gestisce lo stato e la logica, sopravvive ai cambi di configurazione
-    // Il delegate 'by viewModels()' crea automaticamente il ViewModel
     private val viewModel: MainViewModel by viewModels()
+
+    // Adapter per la RecyclerView
+    private lateinit var cardAdapter: CardAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,25 +42,50 @@ class FirstFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Osserviamo il LiveData del ViewModel
-        // Ogni volta che il valore cambia, il lambda viene eseguito automaticamente
+        // Configuriamo la RecyclerView
+        setupRecyclerView()
+
+        // Osserviamo il LiveData del messaggio di benvenuto
         viewModel.welcomeMessage.observe(viewLifecycleOwner) { message ->
-            // Aggiorniamo la TextView con il nuovo messaggio
             binding.textViewWelcome.text = message
+        }
+
+        // Osserviamo il LiveData della lista di carte
+        // Quando la lista cambia, aggiorniamo l'adapter
+        viewModel.cards.observe(viewLifecycleOwner) { cards ->
+            cardAdapter.updateCards(cards)
         }
 
         // Impostiamo il listener per il click del bottone
         binding.buttonStartGame.setOnClickListener {
-            // Leggiamo il testo dall'EditText
             val playerName = binding.editTextPlayerName.text.toString()
-
-            // Deleghiamo la logica al ViewModel
-            // Il ViewModel elabora i dati e aggiorna il LiveData
             viewModel.onStartGameClicked(
                 playerName = playerName,
                 welcomeTemplate = getString(R.string.welcome_message),
                 emptyMessage = getString(R.string.insert_name_message)
             )
+        }
+    }
+
+    /**
+     * Configura la RecyclerView con adapter e layout manager.
+     *
+     * Il LayoutManager definisce come gli item sono disposti:
+     * - LinearLayoutManager: lista verticale o orizzontale
+     * - GridLayoutManager: griglia
+     * - StaggeredGridLayoutManager: griglia con altezze variabili
+     */
+    private fun setupRecyclerView() {
+        // Creiamo l'adapter
+        cardAdapter = CardAdapter()
+
+        // Configuriamo la RecyclerView
+        binding.recyclerViewCards.apply {
+            // Impostiamo l'adapter
+            adapter = cardAdapter
+
+            // Impostiamo il LayoutManager (lista verticale)
+            layoutManager = LinearLayoutManager(requireContext())
         }
     }
 
