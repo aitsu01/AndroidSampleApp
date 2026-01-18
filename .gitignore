@@ -10,6 +10,8 @@
 .DS_Store
 /build
 /captures
+.idea
+.claude
 .externalNativeBuild
 .cxx
 todo.md
