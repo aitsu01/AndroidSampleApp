@@ -5,11 +5,12 @@ Progetto didattico progressivo per imparare lo sviluppo Android, dall'interfacci
 ---
 
 ## Indice Lezioni
-- [Lezione 0: Ciclo di vita Activity](#lezione-0-ciclo-vita-activity) (branch: `lezione-0`)
-- [Lezione 1: TextView, EditText e Button](#lezione-1-textview-edittext-e-button) (branch: `lezione-1-textview-edittext-button`)
-- [Lezione 2: ViewModel e LiveData](#lezione-2-viewmodel-e-livedata) (branch: `lezione-2-viewmodel`)
-- [Lezione 3: RecyclerView e Liste](#lezione-3-recyclerview-e-liste) (branch: `lezione-3-liste-semplici`)
-- [Lezione 4: Data Class e Modelli Dati](#lezione-4-data-class-e-modelli-dati) (branch: `lezione-4-modelli-dati`)
+- [Lezione 0: Ciclo di vita Activity](#lezioni/0-ciclo-vita-activity) (branch: `lezioni/0-ciclo-di-vita`)
+- [Lezione 1: TextView, EditText e Button](#lezioni/1-textview-edittext-e-button) (branch: `lezioni/1-textview-edittext-button`)
+- [Lezione 2: ViewModel e LiveData](#lezioni/2-viewmodel-e-livedata) (branch: `lezioni/2-viewmodel`)
+- [Lezione 3: RecyclerView e Liste](#lezioni/3-recyclerview-e-liste) (branch: `lezioni/3-liste-semplici`)
+- [Lezione 4: Data Class e Modelli Dati](#lezioni/4-data-class-e-modelli-dati) (branch: `lezioni/4-modelli-dati`)
+- [Lezione 5: Retrofit Setup](#lezione-5-retrofit-setup) (branch: `lezioni/5-retrofit-setup`)
 
 ---
 
@@ -791,6 +792,347 @@ Senza riscrivere tutto! 🎉
 ### Prossimi passi
 
 Nella prossima lezione introdurremo **Retrofit** per configurare le chiamate API REST e preparare l'integrazione con l'API Deck of Cards.
+
+---
+
+## Lezione 5: Retrofit Setup
+
+### Obiettivo
+Configurare Retrofit per effettuare chiamate API REST e preparare l'integrazione con l'API Deck of Cards.
+
+### Cos'è Retrofit?
+
+Finora abbiamo lavorato con dati statici. Per creare app reali, dobbiamo comunicare con server esterni tramite **API REST**.
+
+**Retrofit** è la libreria standard per Android per chiamate HTTP REST. Semplifica enormemente il networking:
+
+```kotlin
+// Senza Retrofit (codice complesso)
+val url = URL("https://api.example.com/cards")
+val connection = url.openConnection() as HttpURLConnection
+connection.requestMethod = "GET"
+val reader = BufferedReader(InputStreamReader(connection.inputStream))
+val response = reader.readText()
+val cards = JSONObject(response).getJSONArray("cards")
+// ... parsing manuale del JSON ...
+
+// Con Retrofit (semplice e pulito)
+val cards = api.getCards()
+```
+
+### Architettura Networking
+
+```
+┌─────────────┐
+│  Fragment   │ ← Chiama ViewModel
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  ViewModel  │ ← Chiama API tramite Repository (futuro)
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  ApiClient  │ ← Singleton con Retrofit configurato
+└──────┬──────┘
+       │
+┌──────▼──────────┐
+│ DeckOfCardsApi  │ ← Interfaccia con endpoint
+└──────┬──────────┘
+       │
+┌──────▼──────┐
+│  Retrofit   │ ← Fa chiamate HTTP tramite OkHttp
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│   OkHttp    │ ← Client HTTP
+└──────┬──────┘
+       │
+┌──────▼──────┐
+│  Internet   │ ← API esterna
+└─────────────┘
+```
+
+### Cosa abbiamo imparato
+
+#### 1. **Dipendenze aggiunte**
+
+```kotlin
+// Retrofit - Client REST
+implementation("com.squareup.retrofit2:retrofit:2.9.0")
+implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+
+// OkHttp - Client HTTP sottostante
+implementation("com.squareup.okhttp3:okhttp:4.12.0")
+implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+// Moshi - Parsing JSON
+implementation("com.squareup.moshi:moshi:1.15.0")
+implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
+```
+
+**Perché queste librerie?**
+- **Retrofit**: Trasforma interfacce in chiamate HTTP
+- **OkHttp**: Gestisce connessioni, timeout, cache
+- **Moshi**: Converte JSON ↔ oggetti Kotlin
+- **Logging Interceptor**: Logga richieste/risposte per debug
+
+#### 2. **Interfaccia API**
+
+Definiamo gli endpoint come metodi di un'interfaccia:
+
+```kotlin
+interface DeckOfCardsApi {
+    // Aggiungeremo metodi nelle prossime lezioni:
+    // @GET("deck/new/shuffle/")
+    // suspend fun newDeck(): NewDeckResponse
+}
+```
+
+**Vantaggi:**
+- Type-safe: il compilatore controlla i tipi
+- Semplice: un metodo = un endpoint
+- Testabile: facile creare mock
+
+#### 3. **ApiClient Singleton**
+
+Un singleton che configura e fornisce Retrofit:
+
+```kotlin
+object ApiClient {
+    private const val BASE_URL = "https://deckofcardsapi.com/api/"
+
+    private val moshi: Moshi = Moshi.Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+
+    private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        })
+        .build()
+
+    private val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(okHttpClient)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
+
+    val deckOfCardsApi: DeckOfCardsApi by lazy {
+        retrofit.create(DeckOfCardsApi::class.java)
+    }
+}
+```
+
+**Componenti:**
+- **Moshi**: Parser JSON configurato per Kotlin
+- **OkHttpClient**: Timeout e logging configurati
+- **Retrofit**: Connette tutto insieme
+- **lazy**: Crea l'API solo quando serve
+
+#### 4. **Configurazione OkHttp**
+
+OkHttp gestisce le connessioni HTTP:
+
+```kotlin
+.connectTimeout(10, TimeUnit.SECONDS)  // Max tempo per connessione
+.readTimeout(30, TimeUnit.SECONDS)     // Max tempo per leggere risposta
+.writeTimeout(15, TimeUnit.SECONDS)    // Max tempo per inviare richiesta
+```
+
+**Timeout importanti:**
+- Troppo brevi: fallimenti su reti lente
+- Troppo lunghi: app che si blocca
+- 10-30 secondi è un buon compromesso
+
+#### 5. **Logging Interceptor**
+
+Interceptor che logga tutte le richieste:
+
+```kotlin
+.addInterceptor(
+    HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+)
+```
+
+**Livelli di logging:**
+- `NONE`: Nessun log (produzione)
+- `BASIC`: URL, metodo, status code
+- `HEADERS`: + headers
+- `BODY`: + body completo (debug)
+
+**Output esempio:**
+```
+--> GET https://deckofcardsapi.com/api/deck/new/shuffle/
+--> END GET
+
+<-- 200 OK (234ms)
+Content-Type: application/json
+{"success": true, "deck_id": "abc123", ...}
+<-- END HTTP
+```
+
+#### 6. **Moshi per JSON**
+
+Moshi converte automaticamente JSON in oggetti Kotlin:
+
+```kotlin
+// JSON dall'API
+{
+  "deck_id": "abc123",
+  "remaining": 52
+}
+
+// Diventa automaticamente
+data class NewDeckResponse(
+    val deck_id: String,
+    val remaining: Int
+)
+```
+
+**KotlinJsonAdapterFactory**: Supporto per data class, default values, null safety.
+
+#### 7. **Permesso Internet**
+
+Android richiede esplicitamente il permesso per la rete:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+Senza questo, tutte le chiamate di rete falliranno!
+
+### Pattern Singleton
+
+`object` in Kotlin crea automaticamente un singleton:
+
+```kotlin
+object ApiClient {  // Una sola istanza in tutta l'app
+    val api: DeckOfCardsApi by lazy { ... }
+}
+
+// Uso da qualsiasi parte
+ApiClient.deckOfCardsApi.getCards()
+```
+
+**Vantaggi:**
+- Una sola configurazione Retrofit
+- Riutilizzo connessioni HTTP
+- Gestione centralizzata timeout/interceptor
+
+### API Deck of Cards
+
+L'API che useremo: https://deckofcardsapi.com/
+
+**Endpoint principali:**
+- `GET /deck/new/shuffle/` - Nuovo mazzo mescolato
+- `GET /deck/{deck_id}/draw/?count=5` - Pesca N carte
+- `GET /deck/{deck_id}/shuffle/` - Mescola mazzo
+
+**Esempio risposta:**
+```json
+{
+  "success": true,
+  "deck_id": "kxozasf3edvx",
+  "remaining": 52,
+  "shuffled": true
+}
+```
+
+### Best Practices
+
+✅ **Singleton per configurazione**:
+- Un solo ApiClient per l'intera app
+- Configurazione centralizzata
+
+✅ **Timeout appropriati**:
+- Prevengono app bloccate
+- Gestiscono reti lente
+
+✅ **Logging in debug**:
+- `BODY` per sviluppo
+- `NONE` in produzione
+
+✅ **Separazione responsabilità**:
+- `ApiClient`: configurazione
+- `DeckOfCardsApi`: definizione endpoint
+- `ViewModel`: logica business
+- `Fragment`: UI
+
+### Struttura file
+
+```
+app/src/main/
+├── java/.../
+│   ├── network/                     # NUOVO package
+│   │   ├── ApiClient.kt             # Singleton Retrofit (NUOVO)
+│   │   └── DeckOfCardsApi.kt        # Interfaccia API (NUOVO)
+│   ├── models/
+│   │   └── Card.kt
+│   ├── CardAdapter.kt
+│   ├── MainViewModel.kt
+│   └── FirstFragment.kt
+└── AndroidManifest.xml              # + permesso INTERNET
+```
+
+### Confronto: Prima vs Dopo
+
+**Prima (dati statici):**
+```kotlin
+private fun loadCards() {
+    val cardList = listOf(
+        Card("Asso", "Cuori", R.drawable.ic_hearts),
+        ...
+    )
+    _cards.value = cardList
+}
+```
+
+**Dopo (pronto per API):**
+```kotlin
+// Prossima lezione
+suspend fun fetchCards() {
+    val response = ApiClient.deckOfCardsApi.drawCards(deckId, 5)
+    _cards.value = response.cards
+}
+```
+
+### Cosa manca?
+
+In questa lezione abbiamo solo **preparato l'infrastruttura**. Non facciamo ancora chiamate!
+
+**Nelle prossime lezioni:**
+1. Creare data class per risposte API
+2. Aggiungere endpoint all'interfaccia
+3. Chiamare API dal ViewModel
+4. Gestire stati loading/success/error
+5. Mostrare dati reali nell'UI
+
+### Concetti chiave
+
+- **Retrofit**: Libreria per chiamate HTTP REST type-safe
+- **OkHttp**: Client HTTP con timeout e interceptor
+- **Moshi**: Parser JSON per Kotlin
+- **Singleton**: Un'unica istanza condivisa
+- **Interceptor**: Codice eseguito prima/dopo ogni richiesta
+- **Timeout**: Tempo massimo per operazioni di rete
+- **INTERNET permission**: Permesso Android per accesso rete
+
+### Test pratico
+
+In questa lezione non c'è nulla da testare nell'UI! Abbiamo solo configurato l'infrastruttura.
+
+**Per verificare:**
+1. Il progetto compila senza errori
+2. Le dipendenze sono scaricate
+3. I file sono creati correttamente
+
+### Prossimi passi
+
+Nella prossima lezione creeremo il primo endpoint per **creare un nuovo mazzo** e faremo la prima chiamata API reale!
 
 ---
 
