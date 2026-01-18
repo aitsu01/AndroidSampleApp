@@ -3,6 +3,7 @@ package it.zakantonio.androidsampleapp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import it.zakantonio.androidsampleapp.models.Card
 
 /**
  * ViewModel per gestire lo stato UI del FirstFragment.
@@ -22,9 +23,9 @@ class MainViewModel : ViewModel() {
     val welcomeMessage: LiveData<String> = _welcomeMessage
 
     // LiveData per la lista di carte
-    // In questa lezione gestiamo una lista statica di nomi di carte
-    private val _cards = MutableLiveData<List<String>>()
-    val cards: LiveData<List<String>> = _cards
+    // In questa lezione usiamo oggetti Card con proprietà value e suit
+    private val _cards = MutableLiveData<List<Card>>()
+    val cards: LiveData<List<Card>> = _cards
 
     init {
         // Inizializziamo la lista con alcune carte di esempio
@@ -56,24 +57,25 @@ class MainViewModel : ViewModel() {
     /**
      * Carica la lista di carte di esempio.
      *
-     * Per ora usiamo dati statici (hardcoded).
+     * Ora creiamo oggetti Card con value, suit e icon separati.
+     * L'icon è una risorsa Drawable che rappresenta visualmente il seme.
      * Nelle prossime lezioni, queste carte arriveranno dall'API.
      */
     private fun loadCards() {
         val cardList = listOf(
-            "Asso di Cuori",
-            "Re di Picche",
-            "Regina di Quadri",
-            "Jack di Fiori",
-            "10 di Cuori",
-            "9 di Picche",
-            "8 di Quadri",
-            "7 di Fiori",
-            "6 di Cuori",
-            "5 di Picche",
-            "4 di Quadri",
-            "3 di Fiori",
-            "2 di Cuori"
+            Card("Asso", "Cuori", R.drawable.ic_hearts),
+            Card("Re", "Picche", R.drawable.ic_spades),
+            Card("Regina", "Quadri", R.drawable.ic_diamond),
+            Card("Jack", "Fiori", R.drawable.ic_clubs),
+            Card("10", "Cuori", R.drawable.ic_hearts),
+            Card("9", "Picche", R.drawable.ic_spades),
+            Card("8", "Quadri", R.drawable.ic_diamond),
+            Card("7", "Fiori", R.drawable.ic_clubs),
+            Card("6", "Cuori", R.drawable.ic_hearts),
+            Card("5", "Picche", R.drawable.ic_spades),
+            Card("4", "Quadri", R.drawable.ic_diamond),
+            Card("3", "Fiori", R.drawable.ic_clubs),
+            Card("2", "Cuori", R.drawable.ic_hearts)
         )
         _cards.value = cardList
     }

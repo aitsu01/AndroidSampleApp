@@ -4,19 +4,21 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import it.zakantonio.androidsampleapp.databinding.ItemCardSimpleBinding
+import it.zakantonio.androidsampleapp.models.Card
 
 /**
  * Adapter per la RecyclerView che mostra una lista di carte.
  *
- * RecyclerView è un componente che mostra liste scrollabili in modo efficiente:
- * - Riutilizza le view (pattern ViewHolder) invece di crearle ogni volta
- * - Gestisce automaticamente lo scroll e il riciclo delle view
- * - Permette di mostrare grandi quantità di dati con performance ottime
+ * In questa lezione abbiamo migliorato l'adapter per usare oggetti Card
+ * invece di semplici stringhe. Questo ci permette di:
+ * - Avere dati strutturati (value e suit separati)
+ * - Aggiungere facilmente nuove proprietà in futuro
+ * - Usare type safety (il compilatore controlla i tipi)
  *
- * @param cards Lista di stringhe contenente i nomi delle carte da mostrare
+ * @param cards Lista di oggetti Card da mostrare
  */
 class CardAdapter(
-    private var cards: List<String> = emptyList()
+    private var cards: List<Card> = emptyList()
 ) : RecyclerView.Adapter<CardAdapter.CardViewHolder>() {
 
     /**
@@ -34,10 +36,16 @@ class CardAdapter(
         /**
          * Collega i dati di una carta alle view dell'item.
          *
-         * @param cardName nome della carta da mostrare
+         * Ora usiamo un oggetto Card che contiene value, suit e icon.
+         * Mostriamo sia l'icona che il nome completo.
+         *
+         * @param card oggetto Card da mostrare
          */
-        fun bind(cardName: String) {
-            binding.textViewCardName.text = cardName
+        fun bind(card: Card) {
+            // Mostriamo l'icona del seme (Drawable)
+            binding.imageViewCardIcon.setImageResource(card.icon)
+            // Mostriamo il nome completo della carta
+            binding.textViewCardName.text = card.getFullName()
         }
     }
 
@@ -75,9 +83,9 @@ class CardAdapter(
     /**
      * Aggiorna la lista di carte e notifica la RecyclerView del cambiamento.
      *
-     * @param newCards nuova lista di carte da mostrare
+     * @param newCards nuova lista di oggetti Card da mostrare
      */
-    fun updateCards(newCards: List<String>) {
+    fun updateCards(newCards: List<Card>) {
         cards = newCards
         // Notifichiamo che i dati sono cambiati, così RecyclerView si aggiorna
         notifyDataSetChanged()

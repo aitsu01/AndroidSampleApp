@@ -9,6 +9,7 @@ Progetto didattico progressivo per imparare lo sviluppo Android, dall'interfacci
 - [Lezione 1: TextView, EditText e Button](#lezione-1-textview-edittext-e-button) (branch: `lezione-1-textview-edittext-button`)
 - [Lezione 2: ViewModel e LiveData](#lezione-2-viewmodel-e-livedata) (branch: `lezione-2-viewmodel`)
 - [Lezione 3: RecyclerView e Liste](#lezione-3-recyclerview-e-liste) (branch: `lezione-3-liste-semplici`)
+- [Lezione 4: Data Class e Modelli Dati](#lezione-4-data-class-e-modelli-dati) (branch: `lezione-4-modelli-dati`)
 
 ---
 
@@ -522,6 +523,274 @@ app/src/main/
 ### Prossimi passi
 
 Nella prossima lezione creeremo una **data class Card** per rappresentare le carte come oggetti con più proprietà (valore, seme) invece di semplici stringhe.
+
+---
+
+## Lezione 4: Data Class e Modelli Dati
+
+### Obiettivo
+Imparare a usare le data class di Kotlin per creare modelli dati strutturati e type-safe.
+
+### Problema: Usare stringhe semplici
+
+Nella lezione precedente usavamo stringhe per rappresentare le carte:
+
+```kotlin
+val cards = listOf("Asso di Cuori", "Re di Picche", ...)
+```
+
+**Problemi:**
+- ❌ Dati non strutturati: valore e seme sono mischiati
+- ❌ Difficile da estendere: come aggiungiamo codice carta, immagine, ecc?
+- ❌ Errori facili: "Asso Cuori" o "Asso di Cuori"? Formato inconsistente
+- ❌ No type safety: possiamo passare qualsiasi stringa
+
+### Soluzione: Data Class
+
+Le **data class** in Kotlin sono classi speciali per contenere dati strutturati:
+
+```kotlin
+data class Card(
+    val value: String,
+    val suit: String
+)
+```
+
+**Il compilatore genera automaticamente:**
+- `equals()` - Confronta oggetti per valore
+- `hashCode()` - Per usarli in Set/Map
+- `toString()` - Stampa leggibile dell'oggetto
+- `copy()` - Crea copie modificate
+- `componentN()` - Per destructuring
+
+### Cosa abbiamo imparato
+
+#### 1. **Creare una data class**
+
+```kotlin
+data class Card(
+    val value: String,  // "Asso", "Re", "10", ecc.
+    val suit: String    // "Cuori", "Picche", ecc.
+) {
+    // Metodo custom per ottenere il nome completo
+    fun getFullName(): String {
+        return "$value di $suit"
+    }
+}
+```
+
+**Caratteristiche:**
+- `data` keyword: dice al compilatore di generare metodi automaticamente
+- Proprietà nel constructor: parametri primari della classe
+- `val`: proprietà immutabili (meglio per sicurezza)
+- Metodi custom: possiamo aggiungerne altri se serve
+
+#### 2. **Creare istanze**
+
+```kotlin
+// Prima (stringhe)
+val card = "Asso di Cuori"
+
+// Dopo (data class)
+val card = Card("Asso", "Cuori")
+val card2 = Card(value = "Re", suit = "Picche")  // Named parameters
+```
+
+#### 3. **Metodi generati automaticamente**
+
+```kotlin
+val card1 = Card("Asso", "Cuori")
+val card2 = Card("Asso", "Cuori")
+val card3 = Card("Re", "Picche")
+
+// equals() - confronto per valore
+card1 == card2  // true (stessi dati)
+card1 == card3  // false (dati diversi)
+
+// toString() - rappresentazione leggibile
+println(card1)  // Output: "Card(value=Asso, suit=Cuori)"
+
+// copy() - creare copie modificate
+val card4 = card1.copy(suit = "Quadri")  // Card("Asso", "Quadri")
+
+// destructuring - estrarre proprietà
+val (value, suit) = card1
+println("$value di $suit")  // "Asso di Cuori"
+```
+
+#### 4. **Type Safety**
+
+```kotlin
+// Prima (stringhe)
+fun showCard(card: String) {
+    // Cosa contiene? Chi lo sa! 🤷‍♂️
+}
+showCard("qualsiasi cosa")  // Compila!
+
+// Dopo (data class)
+fun showCard(card: Card) {
+    // Sicuro! Posso accedere a card.value e card.suit
+    println("${card.value} di ${card.suit}")
+}
+showCard("stringa")  // ERRORE di compilazione! ✅
+showCard(Card("Asso", "Cuori"))  // OK! ✅
+```
+
+#### 5. **Aggiornamento Adapter**
+
+L'adapter ora lavora con oggetti Card invece di stringhe:
+
+```kotlin
+// Prima
+class CardAdapter(private var cards: List<String>) { ... }
+
+fun bind(cardName: String) {
+    binding.textViewCardName.text = cardName
+}
+
+// Dopo
+class CardAdapter(private var cards: List<Card>) { ... }
+
+fun bind(card: Card) {
+    binding.textViewCardName.text = card.getFullName()
+}
+```
+
+#### 6. **Aggiornamento ViewModel**
+
+Il ViewModel crea e gestisce oggetti Card:
+
+```kotlin
+// Prima
+private val _cards = MutableLiveData<List<String>>()
+
+private fun loadCards() {
+    val cardList = listOf("Asso di Cuori", "Re di Picche", ...)
+    _cards.value = cardList
+}
+
+// Dopo
+private val _cards = MutableLiveData<List<Card>>()
+
+private fun loadCards() {
+    val cardList = listOf(
+        Card("Asso", "Cuori"),
+        Card("Re", "Picche"),
+        ...
+    )
+    _cards.value = cardList
+}
+```
+
+### Vantaggi delle Data Class
+
+✅ **Dati strutturati**:
+```kotlin
+card.value  // "Asso"
+card.suit   // "Cuori"
+// Invece di parsing di stringhe!
+```
+
+✅ **Facile da estendere**:
+```kotlin
+data class Card(
+    val value: String,
+    val suit: String,
+    val code: String? = null,      // Aggiungi facilmente
+    val image: String? = null      // nuove proprietà
+)
+```
+
+✅ **Type safety**:
+```kotlin
+// Il compilatore ti aiuta!
+val cards: List<Card> = ...  // Solo oggetti Card, nient'altro
+```
+
+✅ **Code leggibile**:
+```kotlin
+Card("Asso", "Cuori")  // Chiaro e conciso
+// vs
+"Asso di Cuori"  // Formato? Parsing?
+```
+
+✅ **Testing facile**:
+```kotlin
+// Confronto oggetti è semplice
+val expected = Card("Asso", "Cuori")
+val actual = getCard()
+assertEquals(expected, actual)  // Usa equals() generato automaticamente
+```
+
+### Quando usare data class?
+
+**✅ Usa data class quando:**
+- Hai dati strutturati da rappresentare
+- Vuoi type safety
+- Devi confrontare oggetti per valore
+- I dati verranno da/verso API/Database
+
+**❌ Non usare data class quando:**
+- La classe ha logica complessa (usa class normale)
+- Servono ereditarietà complesse
+- La classe rappresenta comportamento, non dati
+
+### Confronto: Prima vs Dopo
+
+| Aspetto | Stringhe | Data Class |
+|---------|----------|------------|
+| Struttura | ❌ Nessuna | ✅ value + suit separati |
+| Type Safety | ❌ Accetta qualsiasi stringa | ✅ Solo oggetti Card validi |
+| Estensibilità | ❌ Difficile | ✅ Aggiungi proprietà facilmente |
+| Confronto | ❌ Confronto stringhe | ✅ Confronto per valore automatico |
+| Leggibilità | ❌ "Asso di Cuori" | ✅ Card("Asso", "Cuori") |
+| Preparazione API | ❌ Devi rifare tutto | ✅ Aggiungi campi API |
+
+### Package Structure
+
+Abbiamo creato un package `models` per organizzare i modelli dati:
+
+```
+app/src/main/java/.../
+├── models/
+│   └── Card.kt           # Data class per carta
+├── CardAdapter.kt        # Usa Card
+├── MainViewModel.kt      # Crea lista di Card
+└── FirstFragment.kt      # Osserva List<Card>
+```
+
+**Best practice:**
+- Modelli dati in package `models`
+- UI in package `ui` (futuro)
+- Network in package `network` (futuro)
+
+### Preparazione per il futuro
+
+Questa data class è pronta per l'API! In futuro aggiungeremo:
+
+```kotlin
+data class Card(
+    val value: String,
+    val suit: String,
+    val code: String,        // "AS", "KH", ecc. (da API)
+    val image: String        // URL immagine (da API)
+)
+```
+
+Senza riscrivere tutto! 🎉
+
+### Concetti chiave
+
+- **Data class**: Classe Kotlin per contenere dati strutturati
+- **Metodi generati**: equals, hashCode, toString, copy, componentN
+- **Type safety**: Il compilatore controlla i tipi e previene errori
+- **Immutabilità**: Usare `val` per proprietà che non cambiano
+- **Separazione responsabilità**: Models per dati, Adapter per UI
+- **Package organization**: Struttura codice in package logici
+
+### Prossimi passi
+
+Nella prossima lezione introdurremo **Retrofit** per configurare le chiamate API REST e preparare l'integrazione con l'API Deck of Cards.
 
 ---
 
