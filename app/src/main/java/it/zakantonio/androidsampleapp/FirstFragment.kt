@@ -4,23 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import it.zakantonio.androidsampleapp.core.BaseFragment
 import it.zakantonio.androidsampleapp.databinding.FragmentFirstBinding
 
 /**
- * Fragment principale che dimostra l'uso di EditText, Button e TextView.
+ * Fragment principale che dimostra l'uso di ViewModel e LiveData.
  *
  * In questa lezione impariamo a:
- * - Usare ViewBinding per accedere alle view
- * - Gestire il click di un Button
- * - Leggere il testo da un EditText
- * - Aggiornare il contenuto di una TextView
+ * - Usare ViewModel per separare logica UI dai dati
+ * - Usare LiveData per osservare cambiamenti nei dati
+ * - Pattern MVVM (Model-View-ViewModel)
+ * - Gestire il ciclo di vita in modo corretto
  */
 class FirstFragment : BaseFragment() {
 
     // ViewBinding per accedere alle view del layout
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
+
+    // ViewModel: gestisce lo stato e la logica, sopravvive ai cambi di configurazione
+    // Il delegate 'by viewModels()' crea automaticamente il ViewModel
+    private val viewModel: MainViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,22 +39,25 @@ class FirstFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Osserviamo il LiveData del ViewModel
+        // Ogni volta che il valore cambia, il lambda viene eseguito automaticamente
+        viewModel.welcomeMessage.observe(viewLifecycleOwner) { message ->
+            // Aggiorniamo la TextView con il nuovo messaggio
+            binding.textViewWelcome.text = message
+        }
+
         // Impostiamo il listener per il click del bottone
         binding.buttonStartGame.setOnClickListener {
-            // Leggiamo il testo inserito dall'utente nell'EditText
+            // Leggiamo il testo dall'EditText
             val playerName = binding.editTextPlayerName.text.toString()
 
-            // Verifichiamo che il nome non sia vuoto
-            if (playerName.isNotBlank()) {
-                // Creiamo il messaggio di benvenuto usando la stringa formattata
-                val welcomeMessage = getString(R.string.welcome_message, playerName)
-
-                // Aggiorniamo il TextView con il messaggio
-                binding.textViewWelcome.text = welcomeMessage
-            } else {
-                // Se il campo è vuoto, mostriamo un messaggio di errore
-                binding.textViewWelcome.text = getString(R.string.insert_name_message)
-            }
+            // Deleghiamo la logica al ViewModel
+            // Il ViewModel elabora i dati e aggiorna il LiveData
+            viewModel.onStartGameClicked(
+                playerName = playerName,
+                welcomeTemplate = getString(R.string.welcome_message),
+                emptyMessage = getString(R.string.insert_name_message)
+            )
         }
     }
 
