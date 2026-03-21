@@ -5,43 +5,53 @@ Progetto sviluppato a fini didattici per il corso Android.
 
 ---
 
-## Branch: `minichat/0-struttura-base` — Lezione 1
+## Branch: `minichat/1-recyclerview` — Lezione 2
 
 ### Obiettivo
-Creare lo scheletro dell'app con la navigazione tra due schermate.
+Visualizzare i messaggi nella chat con una RecyclerView, usando due layout diversi per utente e bot.
 
 ### Cosa è stato aggiunto
 
-- **`MainActivity`** — Activity principale che ospita i fragment e gestisce la navigazione
-- **`BottomNavigationView`** — Barra di navigazione in basso per passare tra Chat e Impostazioni
-- **`ChatFragment`** — Schermata principale della chat (per ora con testo segnaposto)
-- **`SettingsFragment`** — Schermata delle impostazioni (per ora con testo segnaposto)
-- **`MainViewModel`** — ViewModel condiviso tra i due fragment tramite `activityViewModels()`
+- **`Message.kt`** — Data class che rappresenta un messaggio (`testo` + `TipoMessaggio`)
+- **`ChatAdapter.kt`** — Adapter con due ViewHolder: uno per UTENTE, uno per BOT
+- **`item_message_user.xml`** — Bolla messaggio allineata a destra (colore primario)
+- **`item_message_bot.xml`** — Bolla messaggio allineata a sinistra (grigio chiaro)
+- **`bg_bubble_user.xml`** / **`bg_bubble_bot.xml`** — Shape drawable per le bolle arrotondate
+- **`MainViewModel`** — Aggiunto `LiveData<List<Message>>` con messaggi hardcoded di esempio
+- **`ChatFragment`** — Collegato alla RecyclerView, osserva il ViewModel
 
 ### Concetti introdotti
 
 | Concetto | Dove si vede |
 |---|---|
-| Fragment | `ChatFragment`, `SettingsFragment` |
-| FragmentManager | `MainActivity` — `supportFragmentManager.beginTransaction()` |
-| BottomNavigationView | `activity_main.xml` + `MainActivity` |
-| ViewModel condiviso | `activityViewModels()` in entrambi i fragment |
-| View Binding | Tutti i file Kotlin con `_binding` |
+| RecyclerView + Adapter | `ChatAdapter`, `fragment_chat.xml` |
+| Due layout per item | `getItemViewType()` in `ChatAdapter` |
+| ViewHolder pattern | `UtenteViewHolder`, `BotViewHolder` |
+| LiveData + observe | `ChatFragment.onViewCreated()` |
+| LinearLayoutManager | `stackFromEnd = true` per scrollare al fondo |
 
-### Struttura dell'app
+### Struttura dei messaggi
 
 ```
-MainActivity
-├── ChatFragment          ← schermata principale (testo segnaposto)
-└── SettingsFragment      ← impostazioni (testo segnaposto)
+MainViewModel
+└── messaggi: LiveData<List<Message>>
+        │
+        └── ChatFragment osserva e aggiorna ChatAdapter
+                ├── item layout UTENTE  (bolla destra)
+                └── item layout BOT     (bolla sinistra)
 ```
+
+---
+
+## Lezione precedente
+
+- **Lezione 1** (`minichat/0-struttura-base`) — `MainActivity` + `BottomNavigationView` + due fragment vuoti
 
 ---
 
 ## Prossimi step
 
-- **Lezione 2** — RecyclerView con messaggi hardcoded e due layout diversi (utente / bot)
-- **Lezione 3** — Gestione eventi: click per inviare, longClick per condividere
+- **Lezione 3** — Gestione eventi: click sul bottone aggiunge messaggio, longClick sul bot mostra Toast
 - **Lezione 4** — Impostazioni con SharedPreferences (tono del bot, lunghezza risposte)
 - **Lezione 5** — Intent `ACTION_SEND` per condividere i messaggi del bot
 - **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter

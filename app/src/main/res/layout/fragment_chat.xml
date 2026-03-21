@@ -1,23 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Layout del ChatFragment — schermata principale della chat.
-    Per ora contiene solo un testo segnaposto.
-    Nelle prossime lezioni sarà sostituito con la RecyclerView e l'input.
+    Layout del ChatFragment.
+    Struttura verticale: RecyclerView (lista messaggi) + area input in basso.
+    L'area input sarà attivata nella Lezione 3 con la gestione degli eventi.
 -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <!-- Testo segnaposto — verrà rimosso nelle prossime lezioni -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Lista dei messaggi: occupa tutto lo spazio disponibile -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_messaggi"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="8dp" />
+
+    <!-- Separatore visivo tra la lista e l'area di input -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD" />
+
+    <!-- Area di input: campo di testo + bottone Invia (attivi dalla Lezione 3) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Chat — in costruzione"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <EditText
+            android:id="@+id/campo_testo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Scrivi un messaggio..."
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine"
+            android:maxLines="4" />
+
+        <Button
+            android:id="@+id/bottone_invia"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Invia" />
+
+    </LinearLayout>
+
+</LinearLayout>
