@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     // URL base dell'API Deck of Cards
-    private const val BASE_URL = "https://deckofcardsapi.com/api/"
+    private const val BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 
     /**
      * Configura Moshi per il parsing JSON.
@@ -76,13 +76,4 @@ object ApiClient {
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
 
-    /**
-     * Fornisce l'istanza dell'interfaccia API.
-     *
-     * Retrofit crea automaticamente l'implementazione di DeckOfCardsApi.
-     * Usiamo lazy per creare l'istanza solo quando serve.
-     */
-    val deckOfCardsApi: DeckOfCardsApi by lazy {
-        retrofit.create(DeckOfCardsApi::class.java)
-    }
 }
