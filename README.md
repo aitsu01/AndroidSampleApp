@@ -5,53 +5,50 @@ Progetto sviluppato a fini didattici per il corso Android.
 
 ---
 
-## Branch: `minichat/1-recyclerview` — Lezione 2
+## Branch: `minichat/2-eventi` — Lezione 3
 
 ### Obiettivo
-Visualizzare i messaggi nella chat con una RecyclerView, usando due layout diversi per utente e bot.
+Rendere la chat interattiva gestendo i due eventi principali: click e longClick.
 
-### Cosa è stato aggiunto
+### Cosa è stato modificato
 
-- **`Message.kt`** — Data class che rappresenta un messaggio (`testo` + `TipoMessaggio`)
-- **`ChatAdapter.kt`** — Adapter con due ViewHolder: uno per UTENTE, uno per BOT
-- **`item_message_user.xml`** — Bolla messaggio allineata a destra (colore primario)
-- **`item_message_bot.xml`** — Bolla messaggio allineata a sinistra (grigio chiaro)
-- **`bg_bubble_user.xml`** / **`bg_bubble_bot.xml`** — Shape drawable per le bolle arrotondate
-- **`MainViewModel`** — Aggiunto `LiveData<List<Message>>` con messaggi hardcoded di esempio
-- **`ChatFragment`** — Collegato alla RecyclerView, osserva il ViewModel
+- **`ChatAdapter.kt`** — Aggiunto parametro `onLongClickBot: (Message) -> Unit` (callback) e `setOnLongClickListener` sul ViewHolder del bot
+- **`ChatFragment.kt`** — Aggiunto `setOnClickListener` sul bottone "Invia" e gestione del Toast al longClick
 
 ### Concetti introdotti
 
 | Concetto | Dove si vede |
 |---|---|
-| RecyclerView + Adapter | `ChatAdapter`, `fragment_chat.xml` |
-| Due layout per item | `getItemViewType()` in `ChatAdapter` |
-| ViewHolder pattern | `UtenteViewHolder`, `BotViewHolder` |
-| LiveData + observe | `ChatFragment.onViewCreated()` |
-| LinearLayoutManager | `stackFromEnd = true` per scrollare al fondo |
+| `setOnClickListener` | `ChatFragment.impostaBottoneInvia()` |
+| `setOnLongClickListener` | `ChatAdapter.onBindViewHolder()` sul BotViewHolder |
+| Callback (lambda) | `onLongClickBot: (Message) -> Unit` passata dal fragment all'adapter |
+| Toast | `ChatFragment.mostraToastCondividi()` |
 
-### Struttura dei messaggi
+### Come funzionano gli eventi
 
 ```
-MainViewModel
-└── messaggi: LiveData<List<Message>>
-        │
-        └── ChatFragment osserva e aggiorna ChatAdapter
-                ├── item layout UTENTE  (bolla destra)
-                └── item layout BOT     (bolla sinistra)
+Utente preme "Invia"
+  → setOnClickListener in ChatFragment
+  → viewModel.aggiungiMessaggio()
+  → LiveData notifica → RecyclerView si aggiorna
+
+Utente tiene premuto su messaggio bot
+  → setOnLongClickListener in ChatAdapter
+  → chiama onLongClickBot (callback definita in ChatFragment)
+  → mostra Toast "Condividi!"       ← nella Lezione 5 diventerà un Intent
 ```
 
 ---
 
-## Lezione precedente
+## Lezioni precedenti
 
+- **Lezione 2** (`minichat/1-recyclerview`) — RecyclerView con due layout diversi (utente / bot)
 - **Lezione 1** (`minichat/0-struttura-base`) — `MainActivity` + `BottomNavigationView` + due fragment vuoti
 
 ---
 
 ## Prossimi step
 
-- **Lezione 3** — Gestione eventi: click sul bottone aggiunge messaggio, longClick sul bot mostra Toast
-- **Lezione 4** — Impostazioni con SharedPreferences (tono del bot, lunghezza risposte)
+- **Lezione 4** — `SettingsFragment` con SharedPreferences (tono del bot, lunghezza risposte)
 - **Lezione 5** — Intent `ACTION_SEND` per condividere i messaggi del bot
 - **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter

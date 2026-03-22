@@ -12,7 +12,13 @@ import it.zakantonio.androidsampleapp.model.TipoMessaggio
 // Adapter per la RecyclerView della chat.
 // Gestisce DUE tipi di item diversi: uno per i messaggi utente, uno per i messaggi bot.
 // Il metodo getItemViewType() è il meccanismo chiave che permette di usare layout diversi.
-class ChatAdapter(private val messaggi: List<Message>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+//
+// onLongClickBot è una funzione di callback passata dal fragment: l'adapter non sa
+// cosa succederà al longClick — si limita a "chiamare indietro" il fragment quando accade.
+class ChatAdapter(
+    private val messaggi: List<Message>,
+    private val onLongClickBot: (Message) -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     // Costanti che identificano i due tipi di item nella lista
     companion object {
@@ -59,7 +65,16 @@ class ChatAdapter(private val messaggi: List<Message>) : RecyclerView.Adapter<Re
         val messaggio = messaggi[position]
         when (holder) {
             is UtenteViewHolder -> holder.testoMessaggio.text = messaggio.testo
-            is BotViewHolder -> holder.testoMessaggio.text = messaggio.testo
+            is BotViewHolder -> {
+                holder.testoMessaggio.text = messaggio.testo
+
+                // Evento 2 — LongClick: tieni premuto su un messaggio bot per attivare il callback.
+                // setOnLongClickListener deve restituire true per indicare che l'evento è gestito.
+                holder.itemView.setOnLongClickListener {
+                    onLongClickBot(messaggio)
+                    true
+                }
+            }
         }
     }
 
