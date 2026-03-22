@@ -5,47 +5,73 @@ Progetto sviluppato a fini didattici per il corso Android.
 
 ---
 
-## Branch: `minichat/4-intent` — Lezione 5
+## Branch: `minichat/5-openrouter` — Lezione 6
 
 ### Obiettivo
-Sostituire il Toast del longClick con un vero `Intent.ACTION_SEND` per condividere il testo del messaggio con qualsiasi app del dispositivo.
+Collegare l'app alle API di OpenRouter con coroutine, inviare la cronologia dei messaggi e il system prompt, e mostrare la risposta reale del bot.
 
-### Cosa è stato modificato
+### Cosa è stato aggiunto / modificato
 
-- **`ChatFragment.kt`** — `mostraToastCondividi()` sostituito con `condividiMessaggio()` che lancia un `Intent.ACTION_SEND`
+- **`network/OpenRouterModels.kt`** — Data class per richiesta (`ChatRequest`, `ChatMessage`) e risposta (`ChatResponse`, `Choice`)
+- **`network/OpenRouterService.kt`** — Interfaccia Retrofit con la funzione `suspend` per il POST
+- **`network/ApiClient.kt`** — Aggiunto interceptor per l'header `Authorization` e `service: OpenRouterService`
+- **`MainViewModel.kt`** — Aggiunta `inviaMessaggio()` con `viewModelScope.launch` + `withContext(Dispatchers.IO)`, aggiunto `caricamento: LiveData<Boolean>`
+- **`ChatFragment.kt`** — Chiama `viewModel.inviaMessaggio()`, osserva `caricamento` per disabilitare il bottone
 
 ### Concetti introdotti
 
 | Concetto | Dove si vede |
 |---|---|
-| Intent implicito | `Intent(Intent.ACTION_SEND)` — Android sceglie le app compatibili |
-| `Intent.EXTRA_TEXT` | Passa il testo del messaggio all'app destinataria |
-| `Intent.createChooser` | Mostra il selettore di app con un titolo personalizzato |
+| Coroutine (`viewModelScope.launch`) | `MainViewModel.inviaMessaggio()` |
+| `withContext(Dispatchers.IO)` | Sposta la chiamata di rete su thread di background |
+| `suspend fun` | `OpenRouterService.inviaMessaggio()` |
+| OkHttp Interceptor | `ApiClient` — aggiunge `Authorization` a ogni richiesta |
+| `LiveData<Boolean>` caricamento | Disabilita il bottone mentre l'API risponde |
 
-### Come funziona l'Intent implicito
+### Flusso completo di una chiamata
 
 ```
-Utente tiene premuto su messaggio bot
-  → setOnLongClickListener in ChatAdapter
-  → callback condividiMessaggio() in ChatFragment
-  → Intent(ACTION_SEND) con EXTRA_TEXT = testo del messaggio
-  → createChooser → Android mostra le app compatibili (WhatsApp, Gmail, ecc.)
+Utente preme "Invia"
+  → ChatFragment chiama viewModel.inviaMessaggio(testo)
+
+MainViewModel
+  1. Aggiunge il messaggio utente → RecyclerView si aggiorna
+  2. _caricamento = true → bottone disabilitato
+  3. viewModelScope.launch {
+       withContext(Dispatchers.IO) {
+           ApiClient.service.inviaMessaggio(ChatRequest)  ← chiamata HTTP
+       }
+       Aggiunge risposta bot → RecyclerView si aggiorna
+     }
+  4. _caricamento = false → bottone riabilitato
 ```
 
-La differenza rispetto a un **Intent esplicito** (es. `Intent(context, SettingsActivity::class.java)`)
-è che qui non specifichiamo l'app destinataria: lo decide Android in base al tipo di contenuto (`text/plain`).
+### Struttura della richiesta API
+
+```json
+{
+  "model": "openai/gpt-4o-mini",
+  "max_tokens": 300,
+  "messages": [
+    { "role": "system",    "content": "<system prompt da impostazioni>" },
+    { "role": "user",      "content": "primo messaggio" },
+    { "role": "assistant", "content": "prima risposta" },
+    { "role": "user",      "content": "nuovo messaggio" }
+  ]
+}
+```
+
+> **Nota:** prima di testare, sostituire `YOUR_API_KEY_HERE` in `ApiClient.kt` con una chiave valida da [openrouter.ai/keys](https://openrouter.ai/keys).
 
 ---
 
-## Lezioni precedenti
+## Tutte le lezioni
 
-- **Lezione 4** (`minichat/3-settings`) — `SettingsFragment` con SharedPreferences (system prompt + lunghezza)
-- **Lezione 3** (`minichat/2-eventi`) — Click su "Invia" e longClick per il Toast
-- **Lezione 2** (`minichat/1-recyclerview`) — RecyclerView con due layout diversi
-- **Lezione 1** (`minichat/0-struttura-base`) — `MainActivity` + `BottomNavigationView` + due fragment vuoti
-
----
-
-## Prossimi step
-
-- **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter (usa `systemPrompt` e `lunghezza` dal ViewModel)
+| Branch | Lezione | Contenuto |
+|---|---|---|
+| `minichat/0-struttura-base` | 1 | `MainActivity` + `BottomNavigationView` + due fragment vuoti |
+| `minichat/1-recyclerview` | 2 | RecyclerView con due layout diversi (utente / bot) |
+| `minichat/2-eventi` | 3 | Click su "Invia" e longClick con Toast |
+| `minichat/3-settings` | 4 | `SettingsFragment` con SharedPreferences |
+| `minichat/4-intent` | 5 | `Intent.ACTION_SEND` per condividere i messaggi |
+| `minichat/5-openrouter` | 6 | Coroutines + chiamata reale alle API OpenRouter |

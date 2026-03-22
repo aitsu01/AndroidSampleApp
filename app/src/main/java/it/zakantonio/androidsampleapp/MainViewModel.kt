@@ -3,12 +3,18 @@ package it.zakantonio.androidsampleapp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import it.zakantonio.androidsampleapp.model.Message
 import it.zakantonio.androidsampleapp.model.TipoMessaggio
+import it.zakantonio.androidsampleapp.network.ApiClient
+import it.zakantonio.androidsampleapp.network.ChatMessage
+import it.zakantonio.androidsampleapp.network.ChatRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // ViewModel condiviso tra ChatFragment e SettingsFragment.
-// Contiene sia i messaggi della chat sia le impostazioni del bot.
-// Sopravvive alle rotazioni dello schermo grazie all'architettura ViewModel.
+// Contiene i messaggi, le impostazioni e la logica per chiamare l'API.
 class MainViewModel : ViewModel() {
 
     // ── Messaggi ──────────────────────────────────────────────────────────────
@@ -18,47 +24,99 @@ class MainViewModel : ViewModel() {
 
     private val listaMessaggi = mutableListOf<Message>()
 
-    init {
-        // Dati hardcoded per la demo — saranno rimossi nella lezione delle API
-        listaMessaggi.addAll(
-            listOf(
-                Message("Ciao! Come posso aiutarti?", TipoMessaggio.BOT),
-                Message("Qual è la capitale della Francia?", TipoMessaggio.UTENTE),
-                Message("La capitale della Francia è Parigi.", TipoMessaggio.BOT),
-                Message("Grazie mille!", TipoMessaggio.UTENTE),
-                Message("Prego! Hai altre domande?", TipoMessaggio.BOT)
-            )
-        )
-        _messaggi.value = listaMessaggi.toList()
-    }
-
-    fun aggiungiMessaggio(messaggio: Message) {
+    private fun aggiungiMessaggio(messaggio: Message) {
         listaMessaggi.add(messaggio)
         _messaggi.value = listaMessaggi.toList()
     }
 
-    // ── Impostazioni ──────────────────────────────────────────────────────────
-    // Queste proprietà sono scritte da SettingsFragment (tramite SharedPreferences)
-    // e saranno lette da ChatFragment nella Lezione 6 per costruire la richiesta API.
+    // ── Stato di caricamento ──────────────────────────────────────────────────
 
-    // System prompt: istruzioni iniziali che definiscono il comportamento del bot
+    // true mentre l'app aspetta la risposta dall'API
+    private val _caricamento = MutableLiveData<Boolean>(false)
+    val caricamento: LiveData<Boolean> = _caricamento
+
+    // ── Impostazioni ──────────────────────────────────────────────────────────
+
     private val _systemPrompt = MutableLiveData<String>(SYSTEM_PROMPT_DEFAULT)
     val systemPrompt: LiveData<String> = _systemPrompt
 
-    // Lunghezza risposta: valore da 1 (breve) a 5 (molto lunga)
     private val _lunghezza = MutableLiveData<Int>(LUNGHEZZA_DEFAULT)
     val lunghezza: LiveData<Int> = _lunghezza
 
-    fun aggiornaSystemPrompt(nuovoPrompt: String) {
-        _systemPrompt.value = nuovoPrompt
+    fun aggiornaSystemPrompt(nuovoPrompt: String) { _systemPrompt.value = nuovoPrompt }
+    fun aggiornaLunghezza(nuovaLunghezza: Int) { _lunghezza.value = nuovaLunghezza }
+
+    // ── Chiamata API ──────────────────────────────────────────────────────────
+
+    // Funzione chiamata da ChatFragment quando l'utente preme "Invia".
+    // Aggiunge il messaggio utente, chiama l'API e aggiunge la risposta del bot.
+    fun inviaMessaggio(testo: String) {
+        // 1. Aggiunge subito il messaggio dell'utente alla lista (UI reattiva)
+        aggiungiMessaggio(Message(testo, TipoMessaggio.UTENTE))
+
+        _caricamento.value = true
+
+        // 2. viewModelScope.launch avvia una coroutine legata al ciclo di vita del ViewModel.
+        //    Se il ViewModel viene distrutto, la coroutine viene cancellata automaticamente.
+        viewModelScope.launch {
+            try {
+                val richiesta = ChatRequest(
+                    model = MODELLO,
+                    messages = costruisciMessaggiApi(),
+                    maxTokens = (lunghezza.value ?: LUNGHEZZA_DEFAULT) * 100
+                )
+
+                // 3. withContext(Dispatchers.IO) sposta l'esecuzione su un thread di background.
+                //    La chiamata di rete non blocca il thread dell'UI.
+                val risposta = withContext(Dispatchers.IO) {
+                    ApiClient.service.inviaMessaggio(richiesta)
+                }
+
+                // 4. Dopo withContext siamo di nuovo sul thread principale: possiamo aggiornare la UI
+                val testoRisposta = risposta.choices.firstOrNull()?.message?.content
+                    ?: "Nessuna risposta ricevuta."
+
+                aggiungiMessaggio(Message(testoRisposta, TipoMessaggio.BOT))
+
+            } catch (e: Exception) {
+                // In caso di errore (rete assente, API key errata, ecc.) mostra un messaggio di errore
+                aggiungiMessaggio(Message("Errore: ${e.message}", TipoMessaggio.BOT))
+            } finally {
+                // finally viene eseguito sempre, sia in caso di successo che di errore
+                _caricamento.value = false
+            }
+        }
     }
 
-    fun aggiornaLunghezza(nuovaLunghezza: Int) {
-        _lunghezza.value = nuovaLunghezza
+    // Costruisce la lista di messaggi da inviare all'API nel formato richiesto.
+    // Include il system prompt come primo messaggio e tutta la cronologia della chat.
+    private fun costruisciMessaggiApi(): List<ChatMessage> {
+        val messaggiApi = mutableListOf<ChatMessage>()
+
+        // Il system prompt va sempre per primo, con role "system"
+        messaggiApi.add(
+            ChatMessage(
+                role = "system",
+                content = systemPrompt.value ?: SYSTEM_PROMPT_DEFAULT
+            )
+        )
+
+        // Converte ogni messaggio della chat nel formato API
+        listaMessaggi.forEach { msg ->
+            messaggiApi.add(
+                ChatMessage(
+                    role = if (msg.tipo == TipoMessaggio.UTENTE) "user" else "assistant",
+                    content = msg.testo
+                )
+            )
+        }
+
+        return messaggiApi
     }
 
     companion object {
         const val SYSTEM_PROMPT_DEFAULT = "Sei un assistente utile e gentile."
         const val LUNGHEZZA_DEFAULT = 3
+        const val MODELLO = "openai/gpt-oss-120b:free"
     }
 }
