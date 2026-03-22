@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.content.Intent
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import it.zakantonio.androidsampleapp.core.BaseFragment
@@ -45,9 +45,9 @@ class ChatFragment : BaseFragment() {
 
         viewModel.messaggi.observe(viewLifecycleOwner) { messaggi ->
             // Passa il callback onLongClickBot all'adapter.
-            // Il fragment decide cosa fare (mostrare il Toast), l'adapter si limita a segnalare l'evento.
+            // Il fragment decide cosa fare (condividere il testo), l'adapter si limita a segnalare l'evento.
             binding.recyclerMessaggi.adapter = ChatAdapter(messaggi) { messaggio ->
-                mostraToastCondividi(messaggio)
+                condividiMessaggio(messaggio)
             }
             if (messaggi.isNotEmpty()) {
                 binding.recyclerMessaggi.scrollToPosition(messaggi.size - 1)
@@ -71,10 +71,16 @@ class ChatFragment : BaseFragment() {
         }
     }
 
-    // Evento 2 — LongClick: mostra un Toast con "Condividi!" (per ora)
-    // Nella Lezione 5 questo Toast sarà sostituito da un vero Intent di condivisione
-    private fun mostraToastCondividi(messaggio: Message) {
-        Toast.makeText(requireContext(), "Condividi!", Toast.LENGTH_SHORT).show()
+    // Evento 2 — LongClick: apre il selettore di app per condividere il testo del messaggio.
+    // Intent.ACTION_SEND è un Intent implicito: Android mostra all'utente tutte le app
+    // capaci di gestirlo (WhatsApp, Gmail, Note, ecc.) senza che noi dobbiamo scegliere.
+    private fun condividiMessaggio(messaggio: Message) {
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"             // tipo di contenuto che stiamo condividendo
+            putExtra(Intent.EXTRA_TEXT, messaggio.testo)  // testo da condividere
+        }
+        // createChooser avvolge l'intent in un selettore con un titolo personalizzato
+        startActivity(Intent.createChooser(intent, "Condividi messaggio"))
     }
 
     override fun onDestroyView() {

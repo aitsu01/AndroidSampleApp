@@ -5,45 +5,41 @@ Progetto sviluppato a fini didattici per il corso Android.
 
 ---
 
-## Branch: `minichat/3-settings` — Lezione 4
+## Branch: `minichat/4-intent` — Lezione 5
 
 ### Obiettivo
-Implementare il `SettingsFragment` con i controlli per personalizzare il bot, salvando le preferenze con `SharedPreferences`.
+Sostituire il Toast del longClick con un vero `Intent.ACTION_SEND` per condividere il testo del messaggio con qualsiasi app del dispositivo.
 
 ### Cosa è stato modificato
 
-- **`fragment_settings.xml`** — Layout con `EditText` multiriga (system prompt) + `Slider` (lunghezza)
-- **`SettingsFragment.kt`** — Legge/scrive `SharedPreferences`, aggiorna il ViewModel
-- **`MainViewModel.kt`** — Aggiunti `LiveData<String>` per il system prompt e `LiveData<Int>` per la lunghezza
+- **`ChatFragment.kt`** — `mostraToastCondividi()` sostituito con `condividiMessaggio()` che lancia un `Intent.ACTION_SEND`
 
 ### Concetti introdotti
 
 | Concetto | Dove si vede |
 |---|---|
-| SharedPreferences (lettura) | `SettingsFragment.caricaPreferenze()` |
-| SharedPreferences (scrittura) | `SettingsFragment.salvaPreferenza()` con `.edit().apply()` |
-| EditText multiriga | `inputType="textMultiLine"`, `minLines="3"` in `fragment_settings.xml` |
-| TextWatcher | `addTextChangedListener` — salva ad ogni modifica del testo |
-| Material Slider + listener | `addOnChangeListener` |
-| ViewModel come ponte | Le impostazioni scritte da `SettingsFragment` sono leggibili da `ChatFragment` |
+| Intent implicito | `Intent(Intent.ACTION_SEND)` — Android sceglie le app compatibili |
+| `Intent.EXTRA_TEXT` | Passa il testo del messaggio all'app destinataria |
+| `Intent.createChooser` | Mostra il selettore di app con un titolo personalizzato |
 
-### Flusso dati delle impostazioni
+### Come funziona l'Intent implicito
 
 ```
-SettingsFragment
-  → legge SharedPreferences al caricamento
-  → aggiorna UI (EditText system prompt, Slider)
-  → aggiorna MainViewModel (systemPrompt, lunghezza)
-
-Quando l'utente modifica un'impostazione:
-  → salva in SharedPreferences  (persiste dopo la chiusura dell'app)
-  → aggiorna MainViewModel      (disponibile subito agli altri fragment)
+Utente tiene premuto su messaggio bot
+  → setOnLongClickListener in ChatAdapter
+  → callback condividiMessaggio() in ChatFragment
+  → Intent(ACTION_SEND) con EXTRA_TEXT = testo del messaggio
+  → createChooser → Android mostra le app compatibili (WhatsApp, Gmail, ecc.)
 ```
+
+La differenza rispetto a un **Intent esplicito** (es. `Intent(context, SettingsActivity::class.java)`)
+è che qui non specifichiamo l'app destinataria: lo decide Android in base al tipo di contenuto (`text/plain`).
 
 ---
 
 ## Lezioni precedenti
 
+- **Lezione 4** (`minichat/3-settings`) — `SettingsFragment` con SharedPreferences (system prompt + lunghezza)
 - **Lezione 3** (`minichat/2-eventi`) — Click su "Invia" e longClick per il Toast
 - **Lezione 2** (`minichat/1-recyclerview`) — RecyclerView con due layout diversi
 - **Lezione 1** (`minichat/0-struttura-base`) — `MainActivity` + `BottomNavigationView` + due fragment vuoti
@@ -52,5 +48,4 @@ Quando l'utente modifica un'impostazione:
 
 ## Prossimi step
 
-- **Lezione 5** — Intent `ACTION_SEND` per condividere i messaggi del bot (sostituisce il Toast)
-- **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter (usa tono e lunghezza dal ViewModel)
+- **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter (usa `systemPrompt` e `lunghezza` dal ViewModel)
