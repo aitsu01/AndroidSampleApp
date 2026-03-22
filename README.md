@@ -5,50 +5,52 @@ Progetto sviluppato a fini didattici per il corso Android.
 
 ---
 
-## Branch: `minichat/2-eventi` — Lezione 3
+## Branch: `minichat/3-settings` — Lezione 4
 
 ### Obiettivo
-Rendere la chat interattiva gestendo i due eventi principali: click e longClick.
+Implementare il `SettingsFragment` con i controlli per personalizzare il bot, salvando le preferenze con `SharedPreferences`.
 
 ### Cosa è stato modificato
 
-- **`ChatAdapter.kt`** — Aggiunto parametro `onLongClickBot: (Message) -> Unit` (callback) e `setOnLongClickListener` sul ViewHolder del bot
-- **`ChatFragment.kt`** — Aggiunto `setOnClickListener` sul bottone "Invia" e gestione del Toast al longClick
+- **`fragment_settings.xml`** — Layout con `EditText` multiriga (system prompt) + `Slider` (lunghezza)
+- **`SettingsFragment.kt`** — Legge/scrive `SharedPreferences`, aggiorna il ViewModel
+- **`MainViewModel.kt`** — Aggiunti `LiveData<String>` per il system prompt e `LiveData<Int>` per la lunghezza
 
 ### Concetti introdotti
 
 | Concetto | Dove si vede |
 |---|---|
-| `setOnClickListener` | `ChatFragment.impostaBottoneInvia()` |
-| `setOnLongClickListener` | `ChatAdapter.onBindViewHolder()` sul BotViewHolder |
-| Callback (lambda) | `onLongClickBot: (Message) -> Unit` passata dal fragment all'adapter |
-| Toast | `ChatFragment.mostraToastCondividi()` |
+| SharedPreferences (lettura) | `SettingsFragment.caricaPreferenze()` |
+| SharedPreferences (scrittura) | `SettingsFragment.salvaPreferenza()` con `.edit().apply()` |
+| EditText multiriga | `inputType="textMultiLine"`, `minLines="3"` in `fragment_settings.xml` |
+| TextWatcher | `addTextChangedListener` — salva ad ogni modifica del testo |
+| Material Slider + listener | `addOnChangeListener` |
+| ViewModel come ponte | Le impostazioni scritte da `SettingsFragment` sono leggibili da `ChatFragment` |
 
-### Come funzionano gli eventi
+### Flusso dati delle impostazioni
 
 ```
-Utente preme "Invia"
-  → setOnClickListener in ChatFragment
-  → viewModel.aggiungiMessaggio()
-  → LiveData notifica → RecyclerView si aggiorna
+SettingsFragment
+  → legge SharedPreferences al caricamento
+  → aggiorna UI (EditText system prompt, Slider)
+  → aggiorna MainViewModel (systemPrompt, lunghezza)
 
-Utente tiene premuto su messaggio bot
-  → setOnLongClickListener in ChatAdapter
-  → chiama onLongClickBot (callback definita in ChatFragment)
-  → mostra Toast "Condividi!"       ← nella Lezione 5 diventerà un Intent
+Quando l'utente modifica un'impostazione:
+  → salva in SharedPreferences  (persiste dopo la chiusura dell'app)
+  → aggiorna MainViewModel      (disponibile subito agli altri fragment)
 ```
 
 ---
 
 ## Lezioni precedenti
 
-- **Lezione 2** (`minichat/1-recyclerview`) — RecyclerView con due layout diversi (utente / bot)
+- **Lezione 3** (`minichat/2-eventi`) — Click su "Invia" e longClick per il Toast
+- **Lezione 2** (`minichat/1-recyclerview`) — RecyclerView con due layout diversi
 - **Lezione 1** (`minichat/0-struttura-base`) — `MainActivity` + `BottomNavigationView` + due fragment vuoti
 
 ---
 
 ## Prossimi step
 
-- **Lezione 4** — `SettingsFragment` con SharedPreferences (tono del bot, lunghezza risposte)
-- **Lezione 5** — Intent `ACTION_SEND` per condividere i messaggi del bot
-- **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter
+- **Lezione 5** — Intent `ACTION_SEND` per condividere i messaggi del bot (sostituisce il Toast)
+- **Lezione 6** — Coroutines + chiamata reale alle API OpenRouter (usa tono e lunghezza dal ViewModel)
