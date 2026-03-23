@@ -2,6 +2,7 @@ package it.zakantonio.androidsampleapp.network
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import it.zakantonio.androidsampleapp.CONST_API_KEY
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -13,7 +14,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     // ⚠️ Sostituisci con la tua chiave API di OpenRouter (openrouter.ai/keys)
-    private const val API_KEY = "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"
+    private const val API_KEY = CONST_API_KEY
 
     // URL base: Retrofit aggiunge il percorso dell'endpoint definito in OpenRouterService
     private const val BASE_URL = "https://openrouter.ai/api/v1/"

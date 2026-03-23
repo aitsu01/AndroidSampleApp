@@ -117,6 +117,6 @@ class MainViewModel : ViewModel() {
     companion object {
         const val SYSTEM_PROMPT_DEFAULT = "Sei un assistente utile e gentile."
         const val LUNGHEZZA_DEFAULT = 3
-        const val MODELLO = "openai/gpt-oss-120b:free"
+        const val MODELLO = "stepfun/step-3.5-flash:free"
     }
 }
