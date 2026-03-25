@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SELECTOR: un drawable che cambia aspetto in base allo stato della view.
+
+    Android valuta gli <item> dall'alto verso il basso e usa il primo che corrisponde
+    allo stato attuale della view. L'item senza attributi di stato è il DEFAULT
+    e va sempre per ultimo, altrimenti "cattura" tutti gli stati.
+
+    Stati comuni:
+      android:state_enabled   → view abilitata o disabilitata
+      android:state_pressed   → utente sta premendo
+      android:state_focused   → view ha il focus (es. tastiera)
+      android:state_checked   → per CheckBox, Switch, ecc.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Stato ABILITATO: sfondo colorato con il colore primario del tema -->
+    <item android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/colorPrimary" />
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Stato DISABILITATO (default — nessun attributo di stato): sfondo grigio -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#BDBDBD" />
+            <corners android:radius="18dp" />
+        </shape>
+    </item>
+
+</selector>

@@ -1,6 +1,8 @@
 package it.zakantonio.androidsampleapp
 
+import android.content.Context
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
 import it.zakantonio.androidsampleapp.core.BaseActivity
 import it.zakantonio.androidsampleapp.databinding.ActivityMainBinding
 
@@ -11,6 +13,9 @@ class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Il tema va applicato PRIMA di super.onCreate() per evitare il flash
+        // tra il tema di default e quello scelto dall'utente.
+        applicaTemaSalvato()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -30,6 +35,7 @@ class MainActivity : BaseActivity() {
         }
 
         // Ascolta i tap sulla BottomNavigationView e sostituisce il fragment nel container
+
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             val fragment = when (item.itemId) {
                 R.id.nav_chat -> ChatFragment()
@@ -42,5 +48,17 @@ class MainActivity : BaseActivity() {
                 .commit()
             true
         }
+    }
+
+    // Legge la preferenza del tema e la applica prima che la UI venga disegnata.
+    // Senza questo, ogni avvio mostrerebbe brevemente il tema di default
+    // prima di applicare quello scelto dall'utente.
+    private fun applicaTemaSalvato() {
+        val prefs = getSharedPreferences(SettingsFragment.PREFS_NAME, Context.MODE_PRIVATE)
+        val modalitaScura = prefs.getBoolean(SettingsFragment.KEY_MODALITA_SCURA, false)
+        AppCompatDelegate.setDefaultNightMode(
+            if (modalitaScura) AppCompatDelegate.MODE_NIGHT_YES
+            else AppCompatDelegate.MODE_NIGHT_NO
+        )
     }
 }

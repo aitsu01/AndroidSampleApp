@@ -2,4 +2,21 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!--
+        Colori personalizzati dell'app.
+        Questi valori vengono referenziati in themes.xml tramite colorPrimary / colorSecondary.
+        Il vantaggio di usare @color invece di codici hex diretti nel tema è che
+        si può rinominare o cambiare un colore in un posto solo.
+    -->
+    <color name="colore_primario">#1565C0</color>       <!-- Blu scuro (light mode) -->
+    <color name="colore_su_primario">#FFFFFF</color>    <!-- Testo sopra il primario -->
+    <color name="colore_secondario">#00897B</color>     <!-- Teal (accent) -->
+
+    <!--
+        Colori personalizzati dell'app in modalità scura.
+    -->
+    <color name="colore_primario_dark">#90CAF9</color> <!-- Tonalità più chiara del blu, leggibile su sfondo scuro -->
+    <color name="colore_su_primario_dark">#0D1B2A</color> <!-- Su sfondo chiaro (il chip colorPrimary) il testo deve essere scuro -->
+    <color name="colore_secondary_dark">#80CBC4</color>
 </resources>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Stili riutilizzabili dell'app.
+
+        Uno STILE è un insieme di attributi raggruppati con un nome.
+        Si applica a una view con: style="@style/NomeStile"
+
+        Il vantaggio rispetto agli attributi inline è che:
+        - se cambi lo stile, cambia in tutti i posti in cui è usato
+        - il layout diventa più leggibile (meno attributi ripetuti)
+
+        Differenza stile vs tema:
+        - STILE  → si applica a una singola view (es. "questo TextView è un titolo")
+        - TEMA   → si applica all'intera app o Activity (es. "colorPrimary di tutto")
+    -->
+    <style name="Stile"></style>
+
+    <!-- Titolo di una sezione nelle impostazioni -->
+    <style name="Stile.TitoloSezione">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Testo descrittivo sotto il titolo di una sezione -->
+    <style name="Stile.DescrizioneSezione">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:textSize">13sp</item>
+        <!--
+            ?attr/colorOnSurfaceVariant è un attributo del tema corrente:
+            sarà grigio scuro in light mode e grigio chiaro in dark mode.
+            Usare ?attr/ invece di un colore hardcoded (#666666) rende la UI
+            automaticamente adatta a entrambi i temi.
+        -->
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+
+</resources>

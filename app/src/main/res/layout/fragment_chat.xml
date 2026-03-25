@@ -5,6 +5,7 @@
     L'area input sarà attivata nella Lezione 3 con la gestione degli eventi.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -42,12 +43,23 @@
             android:inputType="textMultiLine"
             android:maxLines="4" />
 
+        <!--
+            android:background applica il selector drawable.
+            app:backgroundTint="@null" è necessario per i MaterialButton:
+            senza di esso Material sovrascrive il nostro background con il proprio tint,
+            rendendo il selector invisibile.
+        -->
         <Button
             android:id="@+id/bottone_invia"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="Invia" />
+            android:background="@drawable/selector_bottone_invia"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:text="Invia"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@null" />
 
     </LinearLayout>
 

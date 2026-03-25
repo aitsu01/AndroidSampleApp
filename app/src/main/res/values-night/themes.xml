@@ -1,7 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!--
+        Override del tema per la DARK MODE.
+        Android carica automaticamente le risorse dalla cartella values-night/
+        quando il dispositivo è in modalità scura.
+
+        In Material3.DayNight la maggior parte dei colori si adatta da sola.
+        Qui sovrascriviamo colorPrimary con una tinta più chiara,
+        più leggibile su sfondi scuri.
+    -->
     <style name="Base.Theme.AndroidSampleApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Tonalità più chiara del blu, leggibile su sfondo scuro -->
+        <item name="colorPrimary">@color/colore_primario_dark</item>
+        <!-- Su sfondo chiaro (il chip colorPrimary) il testo deve essere scuro -->
+        <item name="colorOnPrimary">@color/colore_su_primario_dark</item>
+        <item name="colorSecondary">@color/colore_secondary_dark</item>
     </style>
+
+    <style name="Theme.AndroidSampleApp" parent="Base.Theme.AndroidSampleApp" />
 </resources>

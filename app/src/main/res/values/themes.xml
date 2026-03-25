@@ -1,8 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!--
+        Tema base dell'app (light mode).
+        parent="Theme.Material3.DayNight.NoActionBar" significa che:
+        - Material3: usa i componenti e i colori del Material Design 3
+        - DayNight: supporta automaticamente il cambio light/dark
+        - NoActionBar: niente ActionBar di sistema (usiamo la MaterialToolbar nostra)
+
+        Le proprietà definite qui sovrascrivono quelle del tema parent.
+    -->
     <style name="Base.Theme.AndroidSampleApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- colorPrimary è il colore principale: toolbar, bottoni, slider, ecc. -->
+        <item name="colorPrimary">@color/colore_primario</item>
+        <!-- colorOnPrimary è il colore usato SUL primario (es. testo bianco su sfondo blu) -->
+        <item name="colorOnPrimary">@color/colore_su_primario</item>
+        <!-- colorSecondary è il colore accent, usato per BottomNavigationView, FAB, ecc. -->
+        <item name="colorSecondary">@color/colore_secondario</item>
     </style>
 
     <style name="Theme.AndroidSampleApp" parent="Base.Theme.AndroidSampleApp" />
