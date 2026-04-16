@@ -1,64 +1,47 @@
 package it.zakantonio.androidsampleapp
 
-import android.content.Context
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatDelegate
 import it.zakantonio.androidsampleapp.core.BaseActivity
 import it.zakantonio.androidsampleapp.databinding.ActivityMainBinding
 
-// Activity principale dell'app: contiene la toolbar, il contenitore dei fragment
-// e la BottomNavigationView per navigare tra ChatFragment e SettingsFragment.
+// Activity principale dell'app: contiene la toolbar e il contenitore dei fragment.
+// Gestisce la navigazione tra CharacterListFragment e CharacterDetailFragment.
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Il tema va applicato PRIMA di super.onCreate() per evitare il flash
-        // tra il tema di default e quello scelto dall'utente.
-        applicaTemaSalvato()
         super.onCreate(savedInstanceState)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Imposta la toolbar come ActionBar dell'app
         setSupportActionBar(binding.toolbar)
 
-        // Carica il ChatFragment come schermata iniziale,
-        // ma solo al primo avvio (savedInstanceState == null).
-        // Quando l'app viene ricreata (es. rotazione), Android ripristina
-        // automaticamente l'ultimo fragment, quindi non è necessario ricrearlo.
+        // Carica la lista come schermata iniziale.
+        // savedInstanceState != null significa che Android sta ripristinando l'app
+        // (es. dopo una rotazione), quindi il fragment è già presente nel back stack.
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, ChatFragment())
+                .replace(R.id.fragment_container, CharacterListFragment())
                 .commit()
-        }
-
-        // Ascolta i tap sulla BottomNavigationView e sostituisce il fragment nel container
-
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            val fragment = when (item.itemId) {
-                R.id.nav_chat -> ChatFragment()
-                R.id.nav_settings -> SettingsFragment()
-                else -> return@setOnItemSelectedListener false
-            }
-            // replace() rimuove il fragment corrente e lo sostituisce con quello nuovo
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit()
-            true
         }
     }
 
-    // Legge la preferenza del tema e la applica prima che la UI venga disegnata.
-    // Senza questo, ogni avvio mostrerebbe brevemente il tema di default
-    // prima di applicare quello scelto dall'utente.
-    private fun applicaTemaSalvato() {
-        val prefs = getSharedPreferences(SettingsFragment.PREFS_NAME, Context.MODE_PRIVATE)
-        val modalitaScura = prefs.getBoolean(SettingsFragment.KEY_MODALITA_SCURA, false)
-        AppCompatDelegate.setDefaultNightMode(
-            if (modalitaScura) AppCompatDelegate.MODE_NIGHT_YES
-            else AppCompatDelegate.MODE_NIGHT_NO
-        )
+    // Apre il fragment di dettaglio per il personaggio con l'ID indicato.
+    // addToBackStack(null) consente di tornare indietro con il tasto Back.
+    fun apriDettaglio(id: Int) {
+        val fragment = CharacterDetailFragment.newInstance(id)
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    // Delegato al sistema di back press quando si preme la freccia "indietro" nella toolbar
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressedDispatcher.onBackPressed()
+        return true
     }
 }

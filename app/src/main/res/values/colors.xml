@@ -4,19 +4,18 @@
     <color name="white">#FFFFFFFF</color>
 
     <!--
-        Colori personalizzati dell'app.
-        Questi valori vengono referenziati in themes.xml tramite colorPrimary / colorSecondary.
-        Il vantaggio di usare @color invece di codici hex diretti nel tema è che
-        si può rinominare o cambiare un colore in un posto solo.
+        Palette Dragon Ball.
+        Colori ispirati all'universo Dragon Ball: arancione fuoco (gi di Goku)
+        e blu profondo (cintura di Goku / cielo).
     -->
-    <color name="colore_primario">#1565C0</color>       <!-- Blu scuro (light mode) -->
-    <color name="colore_su_primario">#FFFFFF</color>    <!-- Testo sopra il primario -->
-    <color name="colore_secondario">#00897B</color>     <!-- Teal (accent) -->
+    <color name="colore_primario">#E65100</color>        <!-- Arancione Dragon Ball (light mode) -->
+    <color name="colore_su_primario">#FFFFFF</color>     <!-- Testo sopra il primario -->
+    <color name="colore_secondario">#1565C0</color>      <!-- Blu (accent) -->
 
     <!--
-        Colori personalizzati dell'app in modalità scura.
+        Colori per la dark mode: tinte più chiare e desaturate, leggibili su sfondi scuri.
     -->
-    <color name="colore_primario_dark">#90CAF9</color> <!-- Tonalità più chiara del blu, leggibile su sfondo scuro -->
-    <color name="colore_su_primario_dark">#0D1B2A</color> <!-- Su sfondo chiaro (il chip colorPrimary) il testo deve essere scuro -->
-    <color name="colore_secondary_dark">#80CBC4</color>
+    <color name="colore_primario_dark">#FF8A65</color>   <!-- Arancione chiaro (dark mode) -->
+    <color name="colore_su_primario_dark">#1C0A00</color><!-- Testo scuro sopra l'arancione chiaro -->
+    <color name="colore_secondario_dark">#90CAF9</color> <!-- Azzurro chiaro (dark mode) -->
 </resources>

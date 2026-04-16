@@ -12,18 +12,17 @@ import androidx.fragment.app.Fragment
 // che logga i vari eventi del ciclo di vita.
 open class BaseFragment : Fragment() {
 
-    companion object {
-        private val TAG = this::class.java.simpleName
-    }
+    private val TAG = this::class.java.simpleName
+    
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        Log.d(TAG, "lifecycle: onAttach")
+        Log.d(TAG, "lifecycle fragment: onAttach")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "lifecycle: onCreate")
+        Log.d(TAG, "lifecycle fragment: onCreate")
     }
 
     override fun onCreateView(
@@ -31,47 +30,47 @@ open class BaseFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d(TAG, "lifecycle: onCreateView")
+        Log.d(TAG, "lifecycle fragment: onCreateView")
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(TAG, "lifecycle: onViewCreated")
+        Log.d(TAG, "lifecycle fragment: onViewCreated")
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "lifecycle: onStart")
+        Log.d(TAG, "lifecycle fragment: onStart")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "lifecycle: onResume")
+        Log.d(TAG, "lifecycle fragment: onResume")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "lifecycle: onPause")
+        Log.d(TAG, "lifecycle fragment: onPause")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "lifecycle: onStop")
+        Log.d(TAG, "lifecycle fragment: onStop")
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.d(TAG, "lifecycle: onDestroyView")
+        Log.d(TAG, "lifecycle fragment: onDestroyView")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "lifecycle: onDestroy")
+        Log.d(TAG, "lifecycle fragment: onDestroy")
     }
 
     override fun onDetach() {
         super.onDetach()
-        Log.d(TAG, "lifecycle: onDetach")
+        Log.d(TAG, "lifecycle fragment: onDetach")
     }
 }

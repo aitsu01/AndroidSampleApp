@@ -13,7 +13,6 @@
         <item name="colorPrimary">@color/colore_primario_dark</item>
         <!-- Su sfondo chiaro (il chip colorPrimary) il testo deve essere scuro -->
         <item name="colorOnPrimary">@color/colore_su_primario_dark</item>
-        <item name="colorSecondary">@color/colore_secondary_dark</item>
     </style>
 
     <style name="Theme.AndroidSampleApp" parent="Base.Theme.AndroidSampleApp" />
