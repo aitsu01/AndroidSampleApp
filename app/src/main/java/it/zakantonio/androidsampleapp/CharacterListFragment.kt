@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import it.zakantonio.androidsampleapp.core.BaseFragment
@@ -59,6 +60,10 @@ class CharacterListFragment : BaseFragment() {
 
         binding.buttonOrdinaZA.setOnClickListener {
             viewModel.aggiornaOrdinamento("Z-A")
+        }
+
+        binding.campoRicerca.doOnTextChanged { text, _, _, _ ->
+            viewModel.aggiornaRicercaNome(text?.toString().orEmpty())
         }
 
         viewModel.personaggi.observe(viewLifecycleOwner) { lista ->

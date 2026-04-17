@@ -76,6 +76,41 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun aggiornaRicercaNome(nome: String) {
+    viewModelScope.launch {
+        _caricamento.value = true
+        try {
+            if (nome.isBlank()) {
+                if (filtroRazzaCorrente == "Saiyan") {
+                    listaCompleta = withContext(Dispatchers.IO) {
+                        ApiClient.service.getCharactersByRace("Saiyan")
+                    }
+                } else if (filtroRazzaCorrente == "Android") {
+                    listaCompleta = withContext(Dispatchers.IO) {
+                        ApiClient.service.getCharactersByRace("Android")
+                    }
+                } else {
+                    val risposta = withContext(Dispatchers.IO) {
+                        ApiClient.service.getCharacters()
+                    }
+                    listaCompleta = risposta.items
+                }
+            } else {
+                listaCompleta = withContext(Dispatchers.IO) {
+                    ApiClient.service.getCharactersByName(nome)
+                }
+            }
+
+            applicaOrdinamento()
+
+        } catch (e: Exception) {
+            _errore.value = e.message
+        } finally {
+            _caricamento.value = false
+        }
+    }
+}
+
 
 
     fun aggiornaOrdinamento(ordinamento: String) {

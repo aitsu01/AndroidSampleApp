@@ -13,7 +13,12 @@ interface DragonBallService {
     @GET("characters")
     suspend fun getCharactersByRace(@Query("race") race: String): List<Character>
 
+    @GET("characters")
+    suspend fun getCharactersByName(@Query("name") name: String): List<Character>
+
     @GET("characters/{id}")
     suspend fun getCharacter(@Path("id") id: Int): Character
+
+   
 
 }
