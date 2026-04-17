@@ -10,40 +10,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// ViewModel condiviso tra CharacterListFragment e CharacterDetailFragment.
-// Contiene i dati dei personaggi e la logica per chiamare l'API.
 class MainViewModel : ViewModel() {
-
-    // ── Lista personaggi ──────────────────────────────────────────────────────
 
     private val _personaggi = MutableLiveData<List<Character>>()
     val personaggi: LiveData<List<Character>> = _personaggi
 
-    // ── Personaggio selezionato (dettaglio) ───────────────────────────────────
-
     private val _personaggioSelezionato = MutableLiveData<Character?>()
     val personaggioSelezionato: LiveData<Character?> = _personaggioSelezionato
 
-    // ── Stato di caricamento ──────────────────────────────────────────────────
-
-    // true mentre l'app aspetta la risposta dall'API
-    private val _caricamento = MutableLiveData<Boolean>(false)
+    private val _caricamento = MutableLiveData(false)
     val caricamento: LiveData<Boolean> = _caricamento
-
-    // ── Errori ────────────────────────────────────────────────────────────────
 
     private val _errore = MutableLiveData<String?>()
     val errore: LiveData<String?> = _errore
 
-    // ── Ordinamento lista ─────────────────────────────────────────────────────
-
     private var listaCompleta: List<Character> = emptyList()
     private var ordinamentoCorrente: String = "A-Z"
+    private var filtroRazzaCorrente: String = "Tutti"
 
-    // ── Chiamate API ──────────────────────────────────────────────────────────
-
-    // Carica la lista dei personaggi dalla prima pagina dell'API.
-    // Chiamata da CharacterListFragment al suo avvio.
     fun caricaPersonaggi() {
         viewModelScope.launch {
             _caricamento.value = true
@@ -56,11 +40,39 @@ class MainViewModel : ViewModel() {
             } catch (e: Exception) {
                 _errore.value = e.message
             } finally {
-                // finally viene eseguito sempre, sia in caso di successo che di errore
                 _caricamento.value = false
             }
         }
     }
+
+    fun aggiornaFiltroRazza(filtro: String) {
+        filtroRazzaCorrente = filtro
+
+        viewModelScope.launch {
+            _caricamento.value = true
+            try {
+                if (filtroRazzaCorrente == "Saiyan") {
+                    listaCompleta = withContext(Dispatchers.IO) {
+                        ApiClient.service.getCharactersByRace("Saiyan")
+                    }
+                } else {
+                    val risposta = withContext(Dispatchers.IO) {
+                        ApiClient.service.getCharacters()
+                    }
+                    listaCompleta = risposta.items
+                }
+
+                applicaOrdinamento()
+
+            } catch (e: Exception) {
+                _errore.value = e.message
+            } finally {
+                _caricamento.value = false
+            }
+        }
+    }
+
+
 
     fun aggiornaOrdinamento(ordinamento: String) {
         ordinamentoCorrente = ordinamento
@@ -69,14 +81,12 @@ class MainViewModel : ViewModel() {
 
     private fun applicaOrdinamento() {
         val listaOrdinata = when (ordinamentoCorrente) {
-            "Z-A" -> listaCompleta.sortedByDescending { it.name.lowercase() }
-            else -> listaCompleta.sortedBy { it.name.lowercase() }
+            "Z-A" -> listaCompleta.sortedByDescending { personaggio -> personaggio.name.lowercase() }
+            else -> listaCompleta.sortedBy { personaggio -> personaggio.name.lowercase() }
         }
         _personaggi.value = listaOrdinata
     }
 
-    // Carica il dettaglio di un singolo personaggio per ID.
-    // Chiamata da CharacterDetailFragment.
     fun caricaDettaglio(id: Int) {
         viewModelScope.launch {
             _caricamento.value = true

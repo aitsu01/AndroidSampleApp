@@ -10,17 +10,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import it.zakantonio.androidsampleapp.core.BaseFragment
 import it.zakantonio.androidsampleapp.databinding.FragmentCharacterListBinding
 
-// Fragment che mostra la lista dei personaggi Dragon Ball.
-// Contiene una RecyclerView, i filtri e i pulsanti per l'ordinamento alfabetico.
 class CharacterListFragment : BaseFragment() {
 
-    // ViewModel condiviso con CharacterDetailFragment
     private val viewModel: MainViewModel by activityViewModels()
 
     private var _binding: FragmentCharacterListBinding? = null
     private val binding get() = _binding!!
 
-    // Al tap su un personaggio, chiede a MainActivity di aprire il dettaglio
     private val adapter = CharacterAdapter { personaggio ->
         (activity as MainActivity).apriDettaglio(personaggio.id)
     }
@@ -45,33 +41,35 @@ class CharacterListFragment : BaseFragment() {
         binding.recyclerPersonaggi.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerPersonaggi.adapter = adapter
 
-        // Pulsante ordinamento A-Z
+        binding.tastoTutti.setOnClickListener {
+            viewModel.aggiornaFiltroRazza("Tutti")
+        }
+
+        binding.tastoSayan.setOnClickListener {
+            viewModel.aggiornaFiltroRazza("Saiyan")
+        }
+
         binding.buttonOrdinaAZ.setOnClickListener {
             viewModel.aggiornaOrdinamento("A-Z")
         }
 
-        // Pulsante ordinamento Z-A
         binding.buttonOrdinaZA.setOnClickListener {
             viewModel.aggiornaOrdinamento("Z-A")
         }
 
-        // Osserva la lista: ogni volta che cambia, aggiorna l'adapter
         viewModel.personaggi.observe(viewLifecycleOwner) { lista ->
             adapter.submitList(lista)
         }
 
-        // Mostra o nasconde la ProgressBar durante il caricamento
         viewModel.caricamento.observe(viewLifecycleOwner) { isLoading ->
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
-        // Avvia il caricamento della lista dall'API
         viewModel.caricaPersonaggi()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        // Rilascia il binding per evitare memory leak
         _binding = null
     }
 }
