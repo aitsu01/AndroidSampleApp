@@ -44,14 +44,17 @@ class CharacterListFragment : BaseFragment() {
 
         binding.tastoTutti.setOnClickListener {
             viewModel.aggiornaFiltroRazza("Tutti")
+            aggiornaStatoFiltri("Tutti")
         }
 
         binding.tastoSayan.setOnClickListener {
             viewModel.aggiornaFiltroRazza("Saiyan")
+            aggiornaStatoFiltri("Saiyan")
         }
 
         binding.tastoAndroid.setOnClickListener {
             viewModel.aggiornaFiltroRazza("Android")
+            aggiornaStatoFiltri("Android")
         }
 
         binding.buttonOrdinaAZ.setOnClickListener {
@@ -74,7 +77,26 @@ class CharacterListFragment : BaseFragment() {
             binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
         }
 
+        aggiornaStatoFiltri("Tutti")
         viewModel.caricaPersonaggi()
+    }
+
+    private fun aggiornaStatoFiltri(filtroAttivo: String) {
+        val pulsanti = listOf(
+            binding.tastoTutti,
+            binding.tastoSayan,
+            binding.tastoAndroid
+        )
+
+        pulsanti.forEach { bottone ->
+            bottone.isChecked = false
+        }
+
+        when (filtroAttivo) {
+            "Tutti" -> binding.tastoTutti.isChecked = true
+            "Saiyan" -> binding.tastoSayan.isChecked = true
+            "Android" -> binding.tastoAndroid.isChecked = true
+        }
     }
 
     override fun onDestroyView() {

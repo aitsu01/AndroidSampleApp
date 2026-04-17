@@ -17,34 +17,37 @@
         android:imeOptions="actionSearch" />
 
     <!-- Pulsanti filtro -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/tastoTutti"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="Tutti" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/tastoTutti"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="Tutti"
+        android:checkable="true" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/tastoSayan"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="Saiyan" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/tastoSayan"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:text="Saiyan"
+        android:checkable="true" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/tastoAndroid"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="Android" />
-    </LinearLayout>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/tastoAndroid"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:text="Android"
+        android:checkable="true" />
+</LinearLayout>
 
     <!-- Pulsanti ordinamento -->
     <LinearLayout
