@@ -1,6 +1,5 @@
 package it.zakantonio.androidsampleapp.model
 
-// Rappresenta un personaggio di Dragon Ball restituito dall'API.
 data class Character(
     val id: Int,
     val name: String,
@@ -10,5 +9,13 @@ data class Character(
     val gender: String,
     val description: String,
     val image: String,
-    val affiliation: String
+    val affiliation: String,
+    val transformations: List<Transformation> = emptyList()
+)
+
+data class Transformation(
+    val id: Int,
+    val name: String,
+    val image: String,
+    val ki: String
 )

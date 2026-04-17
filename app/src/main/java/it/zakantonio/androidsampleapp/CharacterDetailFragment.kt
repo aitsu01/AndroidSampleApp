@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import coil.load
 import it.zakantonio.androidsampleapp.core.BaseFragment
 import it.zakantonio.androidsampleapp.databinding.FragmentCharacterDetailBinding
 import it.zakantonio.androidsampleapp.model.Character
 
-// Fragment che mostra il dettaglio di un personaggio Dragon Ball.
-// Riceve l'ID del personaggio tramite arguments e carica i dati dal ViewModel.
 class CharacterDetailFragment : BaseFragment() {
 
     private val viewModel: MainViewModel by activityViewModels()
@@ -19,10 +19,11 @@ class CharacterDetailFragment : BaseFragment() {
     private var _binding: FragmentCharacterDetailBinding? = null
     private val binding get() = _binding!!
 
+    private val transformationAdapter = TransformationAdapter()
+
     companion object {
         private const val ARG_ID = "character_id"
 
-        // Factory method: crea un'istanza con l'ID già inserito negli arguments
         fun newInstance(id: Int): CharacterDetailFragment {
             return CharacterDetailFragment().apply {
                 arguments = Bundle().apply { putInt(ARG_ID, id) }
@@ -42,10 +43,11 @@ class CharacterDetailFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Mostra il tasto "indietro" nella toolbar
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        // Svuoto subito il titolo della toolbar
         (activity as AppCompatActivity).supportActionBar?.title = null
+
+        binding.recyclerTrasformazioni.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerTrasformazioni.adapter = transformationAdapter
 
         val id = arguments?.getInt(ARG_ID) ?: return
         viewModel.caricaDettaglio(id)
@@ -59,21 +61,46 @@ class CharacterDetailFragment : BaseFragment() {
         }
     }
 
-    fun impostaDettaglio(personaggio: Character?) {
+    private fun impostaDettaglio(personaggio: Character?) {
         if (personaggio == null) {
-            // resetto la view
             (activity as AppCompatActivity).supportActionBar?.title = null
             binding.textNome.text = null
+            binding.textRazza.text = null
+            binding.textGenere.text = null
+            binding.textKi.text = null
+            binding.textMaxKi.text = null
+            binding.textAffiliazione.text = null
             binding.textDescrizione.text = null
+            binding.imagePersonaggio.setImageDrawable(null)
+
+            transformationAdapter.submitList(emptyList())
+            binding.textTitoloTrasformazioni.visibility = View.GONE
+            binding.recyclerTrasformazioni.visibility = View.GONE
             return
         }
 
-        // Aggiorna il titolo della toolbar con il nome del personaggio
         (activity as AppCompatActivity).supportActionBar?.title = personaggio.name
-        binding.textNome.text = personaggio.name
-        binding.textDescrizione.text = personaggio.description
-    }
 
+        binding.textNome.text = personaggio.name
+        binding.textRazza.text = "Razza: ${personaggio.race}"
+        binding.textGenere.text = "Genere: ${personaggio.gender}"
+        binding.textKi.text = "Ki: ${personaggio.ki}"
+        binding.textMaxKi.text = "Max Ki: ${personaggio.maxKi}"
+        binding.textAffiliazione.text = "Affiliazione: ${personaggio.affiliation}"
+        binding.textDescrizione.text = personaggio.description
+
+        binding.imagePersonaggio.load(personaggio.image)
+
+        transformationAdapter.submitList(personaggio.transformations)
+
+        if (personaggio.transformations.isEmpty()) {
+            binding.textTitoloTrasformazioni.visibility = View.GONE
+            binding.recyclerTrasformazioni.visibility = View.GONE
+        } else {
+            binding.textTitoloTrasformazioni.visibility = View.VISIBLE
+            binding.recyclerTrasformazioni.visibility = View.VISIBLE
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
