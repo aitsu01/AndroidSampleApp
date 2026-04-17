@@ -4,18 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.addTextChangedListener
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import it.zakantonio.androidsampleapp.core.BaseFragment
 import it.zakantonio.androidsampleapp.databinding.FragmentCharacterListBinding
 
 // Fragment che mostra la lista dei personaggi Dragon Ball.
-// Contiene un campo di ricerca (da implementare) e una RecyclerView.
+// Contiene una RecyclerView, i filtri e i pulsanti per l'ordinamento alfabetico.
 class CharacterListFragment : BaseFragment() {
 
     // ViewModel condiviso con CharacterDetailFragment
@@ -48,6 +44,16 @@ class CharacterListFragment : BaseFragment() {
 
         binding.recyclerPersonaggi.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerPersonaggi.adapter = adapter
+
+        // Pulsante ordinamento A-Z
+        binding.buttonOrdinaAZ.setOnClickListener {
+            viewModel.aggiornaOrdinamento("A-Z")
+        }
+
+        // Pulsante ordinamento Z-A
+        binding.buttonOrdinaZA.setOnClickListener {
+            viewModel.aggiornaOrdinamento("Z-A")
+        }
 
         // Osserva la lista: ogni volta che cambia, aggiorna l'adapter
         viewModel.personaggi.observe(viewLifecycleOwner) { lista ->

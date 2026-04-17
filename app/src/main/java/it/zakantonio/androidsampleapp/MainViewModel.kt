@@ -35,6 +35,11 @@ class MainViewModel : ViewModel() {
     private val _errore = MutableLiveData<String?>()
     val errore: LiveData<String?> = _errore
 
+    // ── Ordinamento lista ─────────────────────────────────────────────────────
+
+    private var listaCompleta: List<Character> = emptyList()
+    private var ordinamentoCorrente: String = "A-Z"
+
     // ── Chiamate API ──────────────────────────────────────────────────────────
 
     // Carica la lista dei personaggi dalla prima pagina dell'API.
@@ -46,7 +51,8 @@ class MainViewModel : ViewModel() {
                 val risposta = withContext(Dispatchers.IO) {
                     ApiClient.service.getCharacters()
                 }
-                _personaggi.value = risposta.items
+                listaCompleta = risposta.items
+                applicaOrdinamento()
             } catch (e: Exception) {
                 _errore.value = e.message
             } finally {
@@ -54,6 +60,19 @@ class MainViewModel : ViewModel() {
                 _caricamento.value = false
             }
         }
+    }
+
+    fun aggiornaOrdinamento(ordinamento: String) {
+        ordinamentoCorrente = ordinamento
+        applicaOrdinamento()
+    }
+
+    private fun applicaOrdinamento() {
+        val listaOrdinata = when (ordinamentoCorrente) {
+            "Z-A" -> listaCompleta.sortedByDescending { it.name.lowercase() }
+            else -> listaCompleta.sortedBy { it.name.lowercase() }
+        }
+        _personaggi.value = listaOrdinata
     }
 
     // Carica il dettaglio di un singolo personaggio per ID.
