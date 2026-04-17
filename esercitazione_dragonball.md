@@ -14,6 +14,16 @@ Il tuo compito è **estendere** il progetto base completando le richieste elenca
 
 ---
 
+## Setup
+1) Crea un nuovo branch con questa sintassi: `esercizi/dragonball/[NOME-COGNOME]`
+
+2) Clona il progetto da questa repository
+`https://github.com/zakantonio/AndroidSampleApp.git`
+
+3) Fai checkout al branch `esercizi/dragonball/progetto-base`
+
+---
+
 ## API di riferimento
 
 | Endpoint | Descrizione |
@@ -126,7 +136,7 @@ Quando seleziona "Tutti", richiama l'api `getCharacters` senza parametri per ott
 ---
 
 ## Consegna
-1) Crea un nuovo branch con questa sintassi: esercizi/dragonball/[NOME-COGNOME]
+1) Assicurati di essere sul tuo branch: `esercizi/dragonball/[NOME-COGNOME]`
 2) Salva il lavoro svolto con uno o più commit inserendo una breve descrizione di cosa hai fatto.
 3) Pusha il branch quando hai finito!
 
