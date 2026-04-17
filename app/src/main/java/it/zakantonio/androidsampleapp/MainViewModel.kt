@@ -55,6 +55,10 @@ class MainViewModel : ViewModel() {
                     listaCompleta = withContext(Dispatchers.IO) {
                         ApiClient.service.getCharactersByRace("Saiyan")
                     }
+                } else if (filtroRazzaCorrente == "Android") {
+                    listaCompleta = withContext(Dispatchers.IO) {
+                        ApiClient.service.getCharactersByRace("Android")
+                    }
                 } else {
                     val risposta = withContext(Dispatchers.IO) {
                         ApiClient.service.getCharacters()

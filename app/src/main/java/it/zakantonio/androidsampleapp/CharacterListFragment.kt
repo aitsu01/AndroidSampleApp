@@ -49,6 +49,10 @@ class CharacterListFragment : BaseFragment() {
             viewModel.aggiornaFiltroRazza("Saiyan")
         }
 
+        binding.tastoAndroid.setOnClickListener {
+            viewModel.aggiornaFiltroRazza("Android")
+        }
+
         binding.buttonOrdinaAZ.setOnClickListener {
             viewModel.aggiornaOrdinamento("A-Z")
         }
